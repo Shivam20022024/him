@@ -16,4 +16,4 @@ twilio
 dnspython
 pandas
 passlib
-bcrypt
+bcrypt==3.2.0
