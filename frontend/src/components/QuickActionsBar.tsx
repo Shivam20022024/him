@@ -7,6 +7,8 @@ interface QuickActionsBarProps {
   onStartOutreachAll: () => void;
   onSendEmails?: () => void;
   onViewResults?: () => void;
+  onDownloadCandidates?: () => void;
+  onDownloadCalls?: () => void;
 }
 
 const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
@@ -15,6 +17,8 @@ const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
   onStartOutreachAll,
   onSendEmails,
   onViewResults,
+  onDownloadCandidates,
+  onDownloadCalls,
 }) => {
   return (
     <div className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
@@ -75,6 +79,26 @@ const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
             <Mail className="h-4 w-4" />
             Send Emails
           </button>
+          
+          {onDownloadCandidates && (
+            <button
+              type="button"
+              onClick={onDownloadCandidates}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95"
+            >
+              Download Candidates
+            </button>
+          )}
+
+          {onDownloadCalls && (
+            <button
+              type="button"
+              onClick={onDownloadCalls}
+              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95"
+            >
+              Download Calls
+            </button>
+          )}
 
         </div>
       </div>

@@ -225,6 +225,25 @@ export const hiringApi = {
     }
   },
 
+  async downloadExcel(type: 'candidates' | 'calls'): Promise<void> {
+    try {
+      const response = await hiringClient.get(`/export/${type}`, {
+        responseType: 'blob'
+      });
+      const orgId = localStorage.getItem('activeOrganizationId') || 'data';
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${type}_${orgId}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch (error) {
+      console.error(`Failed to download ${type} excel`, error);
+      alert(`Failed to download ${type} file. No data exists yet.`);
+    }
+  },
+
   // Simulation Endpoints
   async nextQuestion(candidateId: string, history: any[], jd?: string, customPrompt?: string, introGreeting?: string) {
     const { data } = await hiringClient.post('/simulation/next-question', {

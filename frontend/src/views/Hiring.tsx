@@ -457,6 +457,8 @@ const Hiring: React.FC = () => {
           onStartOutreachAll={handleStartCallingAll}
           onSendEmails={handleSendEmails}
           onViewResults={scrollToResults}
+          onDownloadCandidates={() => hiringApi.downloadExcel('candidates')}
+          onDownloadCalls={() => hiringApi.downloadExcel('calls')}
         />
 
         {showAddCandidate && (
