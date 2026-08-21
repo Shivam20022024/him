@@ -5,6 +5,7 @@ export interface User {
   id: string;
   role: string;
   org_id: string | null;
+  organization_name?: string | null;
 }
 
 interface AuthContextType {
@@ -36,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token) {
       try {
         const decoded = jwtDecode<any>(token);
-        const userData = {
+        let userData: User = {
           id: decoded.sub,
           role: decoded.role,
           org_id: decoded.org_id
@@ -47,6 +48,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (userData.role !== 'SUPER_ADMIN' || !activeOrganizationId) {
           setActiveOrganizationId(userData.org_id);
         }
+
+        // Fetch full profile to get organization_name without requiring re-login
+        const fetchMe = async () => {
+          try {
+            const BASE = (import.meta as any).env.VITE_API_URL || "http://localhost:8001";
+            const res = await fetch(`${BASE}/api/auth/me`, {
+              headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+              const fullUser = await res.json();
+              if (fullUser.organization_name) {
+                setUser(prev => prev ? { ...prev, organization_name: fullUser.organization_name } : prev);
+              }
+            }
+          } catch (err) {
+            console.error("Failed to fetch user profile", err);
+          }
+        };
+        fetchMe();
       } catch (e) {
         logout();
       }

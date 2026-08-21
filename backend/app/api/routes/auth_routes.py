@@ -36,9 +36,25 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         data={"sub": str(user["id"]), "role": user["role"], "org_id": user.get("organization_id")}
     )
     
+    # Fetch org name for UI
+    org_name = None
+    if user.get("organization_id"):
+        org = await db["organizations"].find_one({"id": user["organization_id"]})
+        if org:
+            org_name = org.get("name")
+            
+    user_response = UserResponse(**user).dict()
+    user_response["organization_name"] = org_name
+
     # We return the standard OAuth2 token response
-    return {"access_token": access_token, "token_type": "bearer", "user": UserResponse(**user).dict()}
+    return {"access_token": access_token, "token_type": "bearer", "user": user_response}
 
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user = Depends(get_current_active_user)):
-    return current_user
+    db = get_db()
+    user_dict = dict(current_user)
+    if user_dict.get("organization_id"):
+        org = await db["organizations"].find_one({"id": user_dict["organization_id"]})
+        if org:
+            user_dict["organization_name"] = org.get("name")
+    return user_dict

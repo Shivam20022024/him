@@ -38,6 +38,7 @@ class UserResponse(UserBase):
     id: str
     created_at: datetime
     updated_at: datetime
+    organization_name: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -80,7 +80,12 @@ class BolnaService:
             "confidence_score": 90, (0-100)
             "match_score": 82, (0-100)
             "interest": "interested", ("interested" or "not_interested")
-            "final_recommendation": "Strong candidate, recommended for next round."
+            "final_recommendation": "Strong candidate, recommended for next round.",
+            "total_experience": "3 years",
+            "relevant_experience": "2 years",
+            "employment_status": "Employed",
+            "joining_availability": "1 month",
+            "interview_availability": "Tomorrow 2 PM"
         }}
 
         Transcript:
@@ -119,7 +124,12 @@ class BolnaService:
             "confidence_score": 88,
             "match_score": 80,
             "interest": "interested",
-            "final_recommendation": "Candidate showed strong communication skills and basic technical knowledge. Recommended to proceed to the technical interview round."
+            "final_recommendation": "Candidate showed strong communication skills and basic technical knowledge. Recommended to proceed to the technical interview round.",
+            "total_experience": "3 years",
+            "relevant_experience": "2 years",
+            "employment_status": "Employed",
+            "joining_availability": "Immediate",
+            "interview_availability": "Anytime tomorrow"
         }
 
     @staticmethod
@@ -298,6 +308,12 @@ class BolnaService:
                     update_doc["confidence_score"] = update_doc.get("confidence_score") or llm_data.get("confidence_score")
                     update_doc["screening_score"] = update_doc.get("screening_score") or llm_data.get("match_score")
                     update_doc["final_recommendation"] = update_doc.get("final_recommendation") or llm_data.get("final_recommendation")
+                    
+                    update_doc["total_experience"] = update_doc.get("total_experience") or llm_data.get("total_experience")
+                    update_doc["relevant_experience"] = update_doc.get("relevant_experience") or llm_data.get("relevant_experience")
+                    update_doc["employment_status"] = update_doc.get("employment_status") or llm_data.get("employment_status")
+                    update_doc["joining_availability"] = update_doc.get("joining_availability") or llm_data.get("joining_availability")
+                    update_doc["interview_availability"] = update_doc.get("interview_availability") or llm_data.get("interview_availability")
                     
                     if not update_doc.get("interest"):
                         interest = llm_data.get("interest", "").lower()

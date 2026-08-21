@@ -103,8 +103,12 @@ const Navbar: React.FC = () => {
             {user ? (
               <div className="hidden lg:flex items-center gap-4">
                 <div className="flex flex-col items-end">
-                  <span className="text-sm font-semibold text-slate-800">{user.role.replace('_', ' ')}</span>
-                  <span className="text-xs text-slate-500">Authenticated</span>
+                  <span className="text-sm font-semibold text-slate-800">
+                    {user.organization_name || user.role.replace('_', ' ')}
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    {user.role === 'ORGANIZATION_ADMIN' && user.organization_name ? 'Organization Admin' : 'Authenticated'}
+                  </span>
                 </div>
                 <div className="h-8 w-px bg-slate-200 mx-2"></div>
                 <button
