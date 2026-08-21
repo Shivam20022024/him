@@ -116,3 +116,30 @@ async def create_company(request: CreateCompanyRequest, current_user: UserInDB =
             "name": request.admin_name
         }
     }
+
+@router.get("/users")
+async def get_all_users(current_user: UserInDB = Depends(require_super_admin)):
+    db = get_db()
+    users = []
+    
+    # Pre-fetch organizations to map org_id to org_name
+    orgs_cursor = db["organizations"].find()
+    orgs_map = {}
+    async for org in orgs_cursor:
+        orgs_map[org["id"]] = org["name"]
+        
+    cursor = db["users"].find().sort("created_at", -1)
+    async for user in cursor:
+        org_id = user.get("organization_id")
+        org_name = orgs_map.get(org_id, "N/A") if org_id else "N/A"
+        
+        users.append({
+            "id": user.get("id"),
+            "name": user.get("name"),
+            "email": user.get("email"),
+            "role": user.get("role"),
+            "organization_name": org_name,
+            "created_at": user.get("created_at")
+        })
+        
+    return users
