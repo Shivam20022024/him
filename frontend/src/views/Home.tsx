@@ -21,6 +21,7 @@ import {
   MoreHorizontal,
   ChevronRight
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import { ViewState } from '../types';
 
@@ -29,6 +30,7 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ onNavigate }) => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-white selection:bg-blue-50 selection:text-blue-900">
       {/* 1. Hero Section */}
@@ -58,7 +60,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             <Button
               size="lg"
               className="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-lg transition-all duration-300 hover:-translate-y-0.5"
-              onClick={() => onNavigate('JOBS')}
+              onClick={() => navigate('/jobs')}
             >
               Get Started
               <ArrowRight size={18} className="ml-2" />
@@ -67,6 +69,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               variant="outline"
               size="lg"
               className="w-full sm:w-auto px-8 py-4 rounded-xl border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all duration-300"
+              onClick={() => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank')}
             >
               <Play size={18} className="mr-2" />
               Watch Demo
@@ -234,7 +237,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             <Button
               size="lg"
               className="w-full sm:w-auto px-10 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 transition-all duration-300"
-              onClick={() => onNavigate('JOBS')}
+              onClick={() => navigate('/jobs')}
             >
               Get Started
             </Button>
@@ -242,6 +245,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               variant="outline"
               size="lg"
               className="w-full sm:w-auto px-10 py-4 rounded-xl border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-50 transition-all duration-300"
+              onClick={() => window.open('mailto:sales@hireonomous.com')}
             >
               Contact Sales
             </Button>
