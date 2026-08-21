@@ -9,8 +9,8 @@ import { APIAnalysisResponse, CallFromAPI } from "../types";
  * Add this to `.env.local`:
  * VITE_API_URL=http://localhost:8000
  */
-const BASE = (import.meta as any).env.VITE_API_URL || "http://localhost:8000";
-const HIRE_BASE = "http://localhost:8001"; // Our new pipeline port
+const BASE = (import.meta as any).env.VITE_API_URL || "http://localhost:8001";
+const HIRE_BASE = (import.meta as any).env.VITE_API_URL || "http://localhost:8001";
 
 /**
  * Helper: Parse JSON or throw a readable error

@@ -23,7 +23,7 @@ interface SendShortlistedEmailsResponse {
   errors?: string[];
 }
 
-const HIRE_BASE = 'http://localhost:8001';
+const HIRE_BASE = (import.meta as any).env.VITE_API_URL || 'http://localhost:8001';
 
 const hiringClient = axios.create({
   baseURL: HIRE_BASE,
