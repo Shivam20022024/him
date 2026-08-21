@@ -1,0 +1,594 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { BriefcaseBusiness, Heart, PhoneCall, Users } from 'lucide-react';
+import ResumeUpload from '../components/ResumeUpload';
+import DashboardHeader from '../components/DashboardHeader';
+import QuickActionsBar from '../components/QuickActionsBar';
+import EnhancedStatsCards from '../components/EnhancedStatsCards';
+import PipelineTable from '../components/PipelineTable';
+import LiveActivityPanel, { ActivityItem } from '../components/LiveActivityPanel';
+import NotificationBanner from '../components/hiring/NotificationBanner';
+import { Candidate, Job } from '../types';
+
+import { hiringApi } from '../services/hiringApi';
+import InterviewModal from '../components/hiring/InterviewModal';
+import PremiumResultsSection from '../components/PremiumResultsSection';
+
+
+// Demo candidates removed per requirement
+
+
+type Notification = {
+  tone: 'success' | 'info' | 'warning';
+  message: string;
+} | null;
+
+const Hiring: React.FC = () => {
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [calling, setCalling] = useState(false);
+  const [notification, setNotification] = useState<Notification>(null);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+
+  const [showAddCandidate, setShowAddCandidate] = useState(false);
+  const [currentJob, setCurrentJob] = useState<Job | null>(null);
+  const [selectedForInterview, setSelectedForInterview] = useState<Candidate | null>(null);
+  const [viewingResult, setViewingResult] = useState<Candidate | null>(null);
+  const pipelineRef = useRef<HTMLDivElement | null>(null);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
+
+  const loadCandidates = async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const response = await hiringApi.getCandidates('all');
+      // Only show candidates in the pipeline if they are from the live API
+      if (response.source === 'api') {
+        setCandidates(response.candidates);
+      } else {
+        setCandidates([]);
+      }
+      setNotification(null);
+
+    } catch {
+      if (!silent) {
+        setNotification({
+          tone: 'warning',
+          message: 'Unable to load candidate data. Please refresh.',
+        });
+      }
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const startFreshSession = async () => {
+      setLoading(true);
+      setCandidates([]);
+      setActivities([]);
+      setSelectedForInterview(null);
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const jobId = urlParams.get('jobId');
+
+      if (jobId) {
+        try {
+          const jobData = await hiringApi.getJobById(jobId);
+          setCurrentJob(jobData);
+          setShowAddCandidate(true);
+        } catch (e) {
+          console.error("Failed to fetch job", e);
+        }
+      }
+
+      const resetResult = await hiringApi.resetSession();
+      if (!resetResult.success) {
+        await loadCandidates();
+        setNotification({
+          tone: 'warning',
+          message: 'Could not fully clear the previous hiring session. Loading current available data instead.',
+        });
+      } else {
+        await loadCandidates();
+        setNotification({
+          tone: 'info',
+          message: 'Fresh hiring session started. Upload resumes to build a new shortlist at runtime.',
+        });
+      }
+    };
+
+    startFreshSession();
+  }, []);
+
+  // Real-time polling for status updates
+  useEffect(() => {
+    const activeCallCandidates = candidates.filter(c => c.status === 'ai_call_pending' || c.status === 'calling');
+    const hasActiveCalls = activeCallCandidates.length > 0;
+    
+    if (hasActiveCalls || candidates.length > 0) {
+      const interval = setInterval(async () => {
+        // Proactively sync active calls from Bolna API if they are still pending
+        if (hasActiveCalls) {
+          try {
+            await Promise.all(activeCallCandidates.map(c => hiringApi.syncCall(c.id)));
+          } catch (e) {
+            console.error("Sync failed", e);
+          }
+        }
+        loadCandidates(true); // Silent refresh to avoid blinking
+      }, 5000); // Poll every 5 seconds for live updates
+      return () => clearInterval(interval);
+    }
+  }, [candidates.length, candidates.some(c => c.status === 'ai_call_pending' || c.status === 'calling')]);
+
+
+
+
+  const shortlistedCandidates = useMemo(
+    () => candidates.filter((candidate) => candidate.resume_score >= 70),
+    [candidates]
+  );
+  
+  const aiQualifiedCandidates = useMemo(() => candidates.filter(c => 
+    c.status === 'completed' ||
+    c.interest === 'interested' || 
+    c.call_status === 'completed'
+  ), [candidates]);
+
+
+
+  const pendingCandidates = useMemo(
+    () =>
+      shortlistedCandidates.filter(
+        (candidate) => !candidate.interest || candidate.interest === 'pending'
+      ),
+    [shortlistedCandidates]
+  );
+
+  const handleUploadResume = async (
+    files: File[],
+    jobDescription: string,
+    jobDescriptionFile?: File | null,
+    skipAi?: boolean
+  ): Promise<boolean> => {
+    setUploading(true);
+    try {
+      const results = await Promise.allSettled(
+        files.map(async (file) => {
+          const response = await hiringApi.uploadResume(file, jobDescription, jobDescriptionFile, skipAi);
+          setCandidates((current) => [response.candidate, ...current]);
+
+          setActivities((current) =>
+            [
+              {
+                id: Date.now().toString(),
+                candidateName: response.candidate.name,
+                type: 'resume_uploaded',
+                message: skipAi ? 'Fast Uploaded Resume' : 'Resume Uploaded',
+                timestamp: new Date().toISOString(),
+              },
+              ...current,
+            ].slice(0, 15)
+          );
+          return response;
+        })
+      );
+
+      const successful = results.filter((r) => r.status === 'fulfilled').length;
+      const failedMessages = results
+        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+        .map((r) => (r.reason instanceof Error ? r.reason.message : 'Resume upload failed.'));
+
+      if (successful > 0) {
+        setNotification({
+          tone: failedMessages.length > 0 ? 'warning' : 'success',
+          message:
+            failedMessages.length > 0
+              ? `Processed ${successful} ${successful === 1 ? 'candidate' : 'candidates'}, but ${failedMessages.length} failed. ${failedMessages[0]}`
+              : `Successfully processed ${successful} ${successful === 1 ? 'candidate' : 'candidates'} and added to the pipeline.`,
+        });
+        return true;
+      } else {
+        setNotification({
+          tone: 'warning',
+          message: failedMessages[0] || 'Resume upload could not be completed. Please try again.',
+        });
+        return false;
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleAddCandidate = async (
+    files: File[],
+    jobDescription: string,
+    jobDescriptionFile?: File | null,
+    skipAi?: boolean
+  ) => {
+    const success = await handleUploadResume(files, jobDescription, jobDescriptionFile, skipAi);
+    if (success) {
+      setShowAddCandidate(false);
+    }
+  };
+
+  const handleManualAdd = async (candidateData: { name: string; email: string; phone: string; skills: string[]; role?: string }) => {
+    setUploading(true);
+    try {
+      const response = await hiringApi.addManualCandidate(candidateData);
+      setCandidates((current) => [response.candidate, ...current]);
+      
+      setActivities((current) =>
+        [
+          {
+            id: Date.now().toString(),
+            candidateName: response.candidate.name,
+            type: 'resume_uploaded',
+            message: 'Manually Added',
+            timestamp: new Date().toISOString(),
+          },
+          ...current,
+        ].slice(0, 15)
+      );
+
+      setNotification({
+        tone: 'success',
+        message: `Successfully added ${response.candidate.name} to the pipeline.`,
+      });
+      setShowAddCandidate(false);
+    } catch (error: any) {
+      setNotification({
+        tone: 'warning',
+        message: error.message || 'Failed to add manual candidate.',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const executeCalling = async (candidatesToCall: Candidate[], isAll: boolean) => {
+    if (!candidatesToCall.length) {
+      setNotification({
+        tone: 'warning',
+        message: `No candidates available in your pipeline for outreach.`,
+      });
+      return;
+    }
+
+    setCalling(true);
+    setNotification({
+      tone: 'info',
+      message: `Initiating AI outreach for ${candidatesToCall.length} candidates in your pipeline...`,
+    });
+
+    try {
+      // If we are calling all candidates, we trigger individual calls for those not already called
+      // If it's just shortlisted, we can use the bulk API or individual as fallback
+      let calledIds: string[] = [];
+      
+      if (isAll) {
+        const results = await Promise.allSettled(
+          candidatesToCall.map(c => hiringApi.callCandidate(c.id))
+        );
+        calledIds = candidatesToCall.filter((_, i) => results[i].status === 'fulfilled').map(c => c.id);
+      } else {
+        const response = await hiringApi.startCalling(candidatesToCall.map(c => c.id));
+        calledIds = response.calledIds;
+      }
+
+      // Create live activity entries for outreach calls
+      const newActivities: ActivityItem[] = candidatesToCall.map((candidate) => ({
+        id: `${Date.now()}-${candidate.id}`,
+        candidateName: candidate.name,
+        type: 'call',
+        message: 'Calling candidate...',
+        timestamp: new Date().toISOString(),
+      }));
+      setActivities((current) => [...newActivities, ...current].slice(0, 15));
+
+      setCandidates((current) =>
+        current.map((candidate) => {
+          if (!calledIds.includes(candidate.id)) {
+            return candidate;
+          }
+          return {
+            ...candidate,
+            status: 'calling',
+            interest: candidate.interest || 'pending',
+          };
+        })
+      );
+
+      setNotification({
+        tone: 'success',
+        message: 'Outreach campaign successfully launched.',
+      });
+    } catch {
+      setNotification({
+        tone: 'warning',
+        message: 'Outreach could not be started. Please check your API configuration.',
+      });
+    } finally {
+      setCalling(false);
+    }
+  };
+
+  const handleStartCalling = async () => {
+    await executeCalling(shortlistedCandidates, false);
+  };
+
+  const handleStartCallingAll = async () => {
+    await executeCalling(candidates, true);
+  };
+
+
+
+  const updateCandidateStatus = (candidateId: string, status: string, interest?: string) => {
+    setCandidates((current) =>
+      current.map((candidate) =>
+        candidate.id === candidateId
+          ? {
+            ...candidate,
+            status,
+            ...(interest ? { interest } : {}),
+          }
+          : candidate
+      )
+    );
+  };
+
+
+  const handleCallCandidate = async (candidate: Candidate) => {
+    try {
+      setNotification({
+        tone: 'info',
+        message: `Initiating AI Agent call for ${candidate.name}...`,
+      });
+
+      const result = await hiringApi.callCandidate(candidate.id);
+
+      if (!result.success) {
+        throw new Error(result.message || 'Call failed');
+      }
+
+      // Activity update removed per requirement to focus on uploads
+
+      setNotification({
+        tone: 'success',
+        message: `AI Agent call successfully triggered for ${candidate.name}.`,
+      });
+
+      setCandidates((current) =>
+        current.map((item) =>
+          item.id === candidate.id ? { ...item, interest: 'pending', status: 'calling' } : item
+        )
+      );
+    } catch (err: any) {
+      setNotification({
+        tone: 'warning',
+        message: err.message || `Failed to initiate AI call for ${candidate.name}. Please check your Bolna configuration.`,
+      });
+    }
+  };
+
+  const handleInterviewCandidate = (candidate: Candidate) => {
+    console.log("DEBUG: Setting selectedForInterview to:", candidate.name);
+    setSelectedForInterview(candidate);
+  };
+
+
+  const handleSendEmails = async () => {
+    setNotification({
+      tone: 'info',
+      message: 'Sending emails to shortlisted candidates...',
+    });
+
+    const result = await hiringApi.sendShortlistedEmails();
+
+    if (result.success) {
+      // Create live activity entries for email outreach
+      const newActivities: ActivityItem[] = shortlistedCandidates.map((candidate) => ({
+        id: `${Date.now()}-${candidate.id}-mail`,
+        candidateName: candidate.name,
+        type: 'mail_sent',
+        message: `Mail sent to ${candidate.email}`,
+        timestamp: new Date().toISOString(),
+      }));
+      setActivities((current) => [...newActivities, ...current].slice(0, 15));
+
+      setNotification({
+        tone: result.failed && result.failed > 0 ? 'warning' : 'success',
+        message:
+          result.failed && result.failed > 0
+            ? `${result.message} First error: ${result.errors?.[0] || 'Unknown error.'}`
+            : result.message,
+      });
+      return;
+    }
+
+    setNotification({
+      tone: 'warning',
+      message: result.message,
+    });
+  };
+
+  const scrollToResults = () => {
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4fb_100%)] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-5">
+        {notification && <NotificationBanner tone={notification.tone} message={notification.message} />}
+
+        <DashboardHeader />
+
+        <EnhancedStatsCards
+          stats={[
+            {
+              title: 'Total Candidates',
+              value: candidates.length,
+              icon: <Users className="h-5 w-5" />,
+              subtitle: 'All profiles in the pipeline',
+              trend: candidates.length > 4 ? 'up' : 'neutral',
+              trendValue: candidates.length > 4 ? `+${candidates.length - 4}` : 'New',
+            },
+            {
+              title: 'Shortlisted',
+              value: shortlistedCandidates.length,
+              icon: <BriefcaseBusiness className="h-5 w-5" />,
+              subtitle: 'Score 70% and above',
+              trend: shortlistedCandidates.length > 4 ? 'up' : 'neutral',
+            },
+            {
+              title: 'Ready for Outreach',
+              value: pendingCandidates.length,
+              icon: <PhoneCall className="h-5 w-5" />,
+              subtitle: 'Awaiting candidate calling',
+              trend: pendingCandidates.length > 0 ? 'up' : 'neutral',
+            },
+
+          ]}
+        />
+
+        <QuickActionsBar
+          onAddCandidate={() => setShowAddCandidate((current) => !current)}
+          onStartOutreach={handleStartCalling}
+          onStartOutreachAll={handleStartCallingAll}
+          onSendEmails={handleSendEmails}
+          onViewResults={scrollToResults}
+        />
+
+        {showAddCandidate && (
+          <div className="mx-auto w-full max-w-4xl">
+            <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-950">Add Profiles</h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Upload a resume and generate a shortlist-ready profile from your hiring brief.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAddCandidate(false)}
+                  className="rounded-2xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                >
+                  Close
+                </button>
+              </div>
+              <ResumeUpload
+                onUpload={handleAddCandidate}
+                onManualAdd={handleManualAdd}
+                isUploading={uploading}
+                initialJob={currentJob}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="grid items-start gap-6 xl:grid-cols-[1.7fr_1fr]">
+          <div ref={pipelineRef} className="h-full">
+            <div className="h-full rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="mb-4">
+                <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-slate-100 mb-2">
+                  <Users className="h-3 w-3" />
+                  Real-time Pipeline
+                </div>
+                <h2 className="text-xl font-black text-slate-950">Uploaded Candidates</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Manage resumes you've uploaded and track their screening progress.
+                </p>
+              </div>
+
+              <div className="h-full">
+                {loading ? (
+                  <PipelineTable
+                    candidates={[]}
+                    isLoading={true}
+                  />
+                ) : candidates.length === 0 ? (
+                  <div className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center shadow-sm">
+                    <div className="mx-auto inline-flex rounded-full bg-white p-4 text-slate-300 shadow-sm">
+                      <Users className="h-8 w-8" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-bold text-slate-900">No candidates uploaded yet</h3>
+                    <p className="mt-2 text-sm text-slate-500 max-w-xs">
+                      Upload candidate resumes to begin AI screening and outreach.
+                    </p>
+                    <button
+                      onClick={() => setShowAddCandidate(true)}
+                      className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      Upload Candidates
+                    </button>
+                  </div>
+                ) : (
+                  <PipelineTable
+                    candidates={candidates}
+                    isLoading={false}
+                    onCallCandidate={(candidate) => {
+                      handleCallCandidate(candidate);
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="h-full">
+            <LiveActivityPanel activities={activities} isLive={calling} />
+          </div>
+        </div>
+
+
+
+
+        {selectedForInterview && (
+          <InterviewModal
+            candidate={selectedForInterview}
+            onStatusChange={(status, interest) => {
+              if (!selectedForInterview) return;
+              updateCandidateStatus(selectedForInterview.id, status, interest);
+            }}
+            onClose={() => {
+              setSelectedForInterview(null);
+              loadCandidates();
+            }}
+            onComplete={() => {
+              setNotification({
+                tone: 'success',
+                message: `Interview for ${selectedForInterview.name} completed successfully!`
+              });
+            }}
+          />
+        )}
+
+        {viewingResult && (
+          <InterviewModal
+            candidate={viewingResult}
+            mode="result"
+            onClose={() => setViewingResult(null)}
+          />
+        )}
+
+        <div ref={resultsRef} className="mt-8 border-t border-slate-200 pt-10">
+          <PremiumResultsSection 
+            candidates={aiQualifiedCandidates} 
+            isLoading={loading} 
+            onViewResult={setViewingResult}
+          />
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
+
+          <p className="text-xs font-medium text-slate-600">
+            Connected to live candidate data
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Hiring;
