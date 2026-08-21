@@ -77,7 +77,7 @@ export const Companies: React.FC = () => {
       <div className="mb-8 flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Companies</h1>
-          <p className="text-slate-500 mt-2">Manage all tenants on the TalklyAI platform.</p>
+          <p className="text-slate-500 mt-2">Manage all tenants on the Novalantis platform.</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
