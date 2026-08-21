@@ -15,3 +15,5 @@ faster-whisper
 twilio
 dnspython
 pandas
+passlib
+bcrypt
