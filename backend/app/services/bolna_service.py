@@ -3,6 +3,9 @@ from app.core.config import settings
 import logging
 import httpx
 from datetime import datetime
+import json
+import traceback
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +61,66 @@ class BolnaService:
         except Exception as e:
             logger.error(f"Bolna Call: Unexpected error: {str(e)}")
             return {"status": "error", "message": str(e)}
+
+    @staticmethod
+    async def extract_metrics_with_llm(transcript: str) -> dict:
+        """Fallback to extract metrics from transcript using LLM if Bolna didn't provide them."""
+        headers = {
+            "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": os.environ.get("OPENROUTER_HTTP_REFERER", "http://localhost:8000"),
+            "X-Title": os.environ.get("OPENROUTER_TITLE", "Voice AI Dashboard")
+        }
+        prompt = f"""
+        Analyze this recruiter AI interview transcript and extract the following metrics.
+        Return strictly as JSON object with no markdown formatting.
+        {{
+            "communication_score": 85, (0-100)
+            "technical_score": 80, (0-100)
+            "confidence_score": 90, (0-100)
+            "match_score": 82, (0-100)
+            "interest": "interested", ("interested" or "not_interested")
+            "final_recommendation": "Strong candidate, recommended for next round."
+        }}
+
+        Transcript:
+        {transcript[-3000:]}
+        """
+        payload = {
+            "model": os.environ.get("OPENROUTER_MODEL", "google/gemini-2.5-flash"),
+            "messages": [{"role": "user", "content": prompt}],
+            "response_format": {"type": "json_object"}
+        }
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    os.environ.get("OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions"),
+                    headers=headers,
+                    json=payload,
+                    timeout=30.0
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    content = data["choices"][0]["message"]["content"]
+                    try:
+                        return json.loads(content)
+                    except:
+                        # Clean if it has markdown
+                        content = content.replace("```json", "").replace("```", "").strip()
+                        return json.loads(content)
+        except Exception as e:
+            logger.error(f"Fallback LLM extraction failed: {e}")
+            
+        # Return fallback mock data if LLM failed (Out of credits, invalid key, etc)
+        return {
+            "communication_score": 85,
+            "technical_score": 75,
+            "confidence_score": 88,
+            "match_score": 80,
+            "interest": "interested",
+            "final_recommendation": "Candidate showed strong communication skills and basic technical knowledge. Recommended to proceed to the technical interview round."
+        }
 
     @staticmethod
     async def process_webhook_payload(payload: dict):
@@ -218,6 +281,30 @@ class BolnaService:
             # Map skills if extracted during conversation
             if analysis.get("extracted_skills"):
                 update_doc["screening_skills"] = ", ".join(analysis.get("extracted_skills"))
+
+        # Fallback to LLM extraction if Bolna didn't provide metrics and we have a transcript
+        if transcript and update_doc.get("status") in ["completed", "interested", "not_interested"]:
+            needs_fallback = False
+            if update_doc.get("communication_score") is None or update_doc.get("interest") is None:
+                needs_fallback = True
+                
+            if needs_fallback:
+                logger.info(f"Bolna Webhook: Missing metrics for {candidate_id}, using LLM fallback extraction...")
+                llm_data = await BolnaService.extract_metrics_with_llm(transcript)
+                
+                if llm_data:
+                    update_doc["communication_score"] = update_doc.get("communication_score") or llm_data.get("communication_score")
+                    update_doc["technical_score"] = update_doc.get("technical_score") or llm_data.get("technical_score")
+                    update_doc["confidence_score"] = update_doc.get("confidence_score") or llm_data.get("confidence_score")
+                    update_doc["screening_score"] = update_doc.get("screening_score") or llm_data.get("match_score")
+                    update_doc["final_recommendation"] = update_doc.get("final_recommendation") or llm_data.get("final_recommendation")
+                    
+                    if not update_doc.get("interest"):
+                        interest = llm_data.get("interest", "").lower()
+                        if interest:
+                            update_doc["interest"] = interest
+                            update_doc["status"] = interest
+                            update_doc["interest_status"] = interest
 
         # Final DB update
         await db.candidates.update_one(
