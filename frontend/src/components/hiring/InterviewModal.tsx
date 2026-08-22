@@ -417,7 +417,7 @@ Say:
             </button>
           </div>
 
-          <div className="flex flex-1 flex-col items-center justify-center p-8">
+          <div className={`flex flex-1 flex-col items-center p-8 overflow-y-auto ${step === 'summary' ? 'justify-start' : 'justify-center'}`}>
              {step === 'ending' ? (
                 <div className="text-center">
                    <Loader2 className="h-16 w-16 text-blue-600 animate-spin mx-auto" />
