@@ -64,9 +64,19 @@ class ExcelService:
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             ]
 
-            ws.append(row)
+            duplicate_found = False
+            for r in range(2, ws.max_row + 1):
+                if ws.cell(row=r, column=1).value == row[0]: # Column 1 is ID
+                    for c in range(len(row)):
+                        ws.cell(row=r, column=c+1).value = row[c]
+                    duplicate_found = True
+                    break
+            
+            if not duplicate_found:
+                ws.append(row)
+                
             wb.save(file_path)
-            logger.info(f"Successfully saved call result to Excel for {data.get('name')}")
+            logger.info(f"Successfully saved/updated call result to Excel for {data.get('name')}")
             return True
         except Exception as e:
             logger.error(f"Failed to save call result to Excel: {str(e)}")

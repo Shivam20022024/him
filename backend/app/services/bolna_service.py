@@ -335,6 +335,7 @@ class BolnaService:
             full_candidate = await db.candidates.find_one({"id": candidate_id})
             if full_candidate and full_candidate.get("organization_id"):
                 ExcelService.save_call_result_to_excel(full_candidate, full_candidate.get("organization_id"))
+                ExcelService.update_candidate_excel(full_candidate, full_candidate.get("organization_id"))
 
         logger.info(f"Bolna Webhook: Updated candidate {candidate_id}")
         return {"status": "success", "candidate_id": candidate_id}
