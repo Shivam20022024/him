@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Lock, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
 import axios from 'axios';
@@ -126,9 +126,9 @@ const Login: React.FC = () => {
             </div>
             
             <div className="text-sm">
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                 Forgot password?
-              </a>
+              </Link>
             </div>
           </div>
 

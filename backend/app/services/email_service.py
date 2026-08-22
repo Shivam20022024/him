@@ -159,3 +159,30 @@ class EmailService:
             "sent_ids": sent_ids
         }
 
+    @staticmethod
+    async def send_password_reset_email(recipient_email: str, reset_link: str) -> bool:
+        if not settings.SMTP_HOST:
+            logger.warning(f"SMTP not configured. Skipping password reset email for {recipient_email}. Link: {reset_link}")
+            return True
+            
+        try:
+            subject = "Password Reset Request"
+            body = f"""
+Hello,
+
+We received a request to reset your password. Click the link below to set a new password:
+
+{reset_link}
+
+If you did not request this, please ignore this email.
+
+Best regards,
+The Hireonomous Team
+            """
+            
+            EmailService.send_email(recipient_email, subject, body)
+            logger.info(f"Successfully sent password reset email to {recipient_email}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send password reset email to {recipient_email}: {str(e)}")
+            return False

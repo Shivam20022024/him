@@ -9,6 +9,8 @@ import Home from "./views/Home";
 import Hiring from "./views/Hiring";
 import Jobs from "./views/Jobs";
 import Login from "./views/auth/Login";
+import ForgotPassword from "./views/auth/ForgotPassword";
+import ResetPassword from "./views/auth/ResetPassword";
 
 // Super Admin Views
 import SuperAdminLayout from "./components/superadmin/SuperAdminLayout";
@@ -29,6 +31,8 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<Home onNavigate={() => {}} />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Protected Organization Routes */}
           <Route path="/dashboard" element={<Navigate to="/jobs" replace />} />

@@ -4,6 +4,19 @@ from app.core.auth import verify_password, create_access_token
 from app.models.user import UserResponse
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
+import uuid
+from datetime import datetime, timedelta
+from pydantic import BaseModel
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
 
 router = APIRouter()
 
@@ -48,6 +61,65 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
     # We return the standard OAuth2 token response
     return {"access_token": access_token, "token_type": "bearer", "user": user_response}
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    db = get_db()
+    user = await db["users"].find_one({"email": request.email})
+    
+    if not user:
+        # Return generic success message to prevent email enumeration
+        return {"message": "If that email is in our system, we have sent a password reset link."}
+        
+    reset_token = str(uuid.uuid4())
+    expiry = datetime.utcnow() + timedelta(hours=1)
+    
+    await db["users"].update_one(
+        {"_id": user["_id"]},
+        {"$set": {"reset_token": reset_token, "reset_token_expiry": expiry}}
+    )
+    
+    from app.services.email_service import EmailService
+    reset_link = f"http://localhost:5173/reset-password?token={reset_token}"
+    
+    # We'll also log it so it's easy to test locally
+    logger.info(f"Password reset link for {request.email}: {reset_link}")
+    
+    try:
+        await EmailService.send_password_reset_email(request.email, reset_link)
+    except Exception as e:
+        logger.error(f"Failed to send password reset email: {str(e)}")
+        # Don't fail the request if email fails, just log it
+    
+    return {"message": "If that email is in our system, we have sent a password reset link."}
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    db = get_db()
+    
+    # Find user by reset token
+    user = await db["users"].find_one({"reset_token": request.token})
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+        
+    # Check expiry
+    expiry = user.get("reset_token_expiry")
+    if not expiry or datetime.utcnow() > expiry:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+        
+    # Hash new password
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    hashed_password = pwd_context.hash(request.new_password)
+    
+    # Update password and clear token
+    await db["users"].update_one(
+        {"_id": user["_id"]},
+        {"$set": {"hashed_password": hashed_password}, "$unset": {"reset_token": "", "reset_token_expiry": ""}}
+    )
+    
+    return {"message": "Password successfully reset. You can now log in."}
 
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user = Depends(get_current_active_user)):
