@@ -33,7 +33,7 @@ const InterviewModal: React.FC<InterviewModalProps> = ({ candidate, onClose, onC
   const [evaluation, setEvaluation] = useState<any>(
     mode === 'result' ? {
       skill_match_score: candidate.screening_score !== undefined ? candidate.screening_score : candidate.resume_score,
-      communication_quality_score: candidate.communication_score ? candidate.communication_score * 10 : (candidate.interview_evaluation?.communication_quality_score || 85),
+      communication_quality_score: candidate.communication_score ? (candidate.communication_score <= 10 ? candidate.communication_score * 10 : candidate.communication_score) : (candidate.interview_evaluation?.communication_quality_score || null),
       technical_score: candidate.technical_score,
       confidence_score: candidate.confidence_score,
       recommendation: candidate.final_recommendation,
@@ -454,10 +454,10 @@ Say:
                                <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">Skill Match</p>
                                <p className="text-4xl font-black text-blue-600 mt-2">{evaluation.skill_match_score}%</p>
                             </div>
-                            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-center">
+                            <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-100 flex flex-col items-center justify-center text-center shadow-sm">
                                <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">Comm. Quality</p>
-                               <p className="text-4xl font-black text-emerald-600 mt-2">{evaluation.communication_quality_score}%</p>
-                            </div>
+                               <p className="text-4xl font-black text-emerald-600 mt-2">{evaluation.communication_quality_score !== null ? `${evaluation.communication_quality_score}%` : 'N/A'}</p>
+                             </div>
                          </div>
                          
                          <div className="grid grid-cols-3 gap-3">
