@@ -417,15 +417,15 @@ Say:
             </button>
           </div>
 
-          <div className={`flex flex-1 flex-col items-center p-8 overflow-y-auto ${step === 'summary' ? 'justify-start' : 'justify-center'}`}>
+          <div className={`flex flex-1 flex-col p-8 overflow-y-auto min-h-0 ${step === 'summary' ? '' : 'justify-center items-center'}`}>
              {step === 'ending' ? (
-                <div className="text-center">
+                <div className="text-center mx-auto">
                    <Loader2 className="h-16 w-16 text-blue-600 animate-spin mx-auto" />
                    <h3 className="mt-6 text-2xl font-bold text-slate-900">Processing Interview...</h3>
                    <p className="text-slate-500 mt-2">AI is evaluating your responses.</p>
                 </div>
              ) : step === 'summary' ? (
-                <div className="max-w-xl w-full">
+                <div className="max-w-xl w-full mx-auto">
                    <div className="text-center mb-8">
                       <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-4">
                          <CheckCircle className="h-10 w-10" />
@@ -487,7 +487,7 @@ Say:
                    )}
                 </div>
              ) : (
-                <div className="flex flex-col items-center gap-12 w-full max-w-lg">
+                <div className="flex flex-col items-center gap-12 w-full max-w-lg mx-auto">
                    <div className="relative">
                       <div className={`h-48 w-48 rounded-full border-4 border-blue-100 flex items-center justify-center bg-white shadow-xl transition-all duration-700 ${isAIPushing ? 'scale-110 shadow-blue-200' : 'scale-100'}`}>
                          <div className="h-40 w-40 rounded-full bg-slate-900 flex items-center justify-center text-white overflow-hidden relative">
