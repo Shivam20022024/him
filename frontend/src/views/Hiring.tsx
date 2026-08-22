@@ -17,12 +17,15 @@ import PremiumResultsSection from '../components/PremiumResultsSection';
 // Demo candidates removed per requirement
 
 
+import { useNavigate } from 'react-router-dom';
+
 type Notification = {
   tone: 'success' | 'info' | 'warning';
   message: string;
 } | null;
 
 const Hiring: React.FC = () => {
+  const navigate = useNavigate();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -82,7 +85,13 @@ const Hiring: React.FC = () => {
           setShowAddCandidate(true);
         } catch (e) {
           console.error("Failed to fetch job", e);
+          navigate('/jobs');
+          return;
         }
+      } else {
+        // Redirect to jobs page if no job context is provided
+        navigate('/jobs');
+        return;
       }
 
       loadCandidates(false, selectedDate);
