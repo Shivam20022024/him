@@ -247,7 +247,11 @@ const Hiring: React.FC = () => {
   };
 
   const executeCalling = async (candidatesToCall: Candidate[], isAll: boolean) => {
-    if (!candidatesToCall.length) {
+    const validCandidates = candidatesToCall.filter(c => 
+      !['calling', 'completed', 'interviewing', 'interviewed'].includes(c.status?.toLowerCase() || '')
+    );
+
+    if (!validCandidates.length) {
       setNotification({
         tone: 'warning',
         message: `No candidates available in your pipeline for outreach.`,
@@ -268,16 +272,16 @@ const Hiring: React.FC = () => {
       
       if (isAll) {
         const results = await Promise.allSettled(
-          candidatesToCall.map(c => hiringApi.callCandidate(c.id))
+          validCandidates.map(c => hiringApi.callCandidate(c.id))
         );
-        calledIds = candidatesToCall.filter((_, i) => results[i].status === 'fulfilled').map(c => c.id);
+        calledIds = validCandidates.filter((_, i) => results[i].status === 'fulfilled').map(c => c.id);
       } else {
-        const response = await hiringApi.startCalling(candidatesToCall.map(c => c.id));
+        const response = await hiringApi.startCalling(validCandidates.map(c => c.id));
         calledIds = response.calledIds;
       }
 
       // Create live activity entries for outreach calls
-      const newActivities: ActivityItem[] = candidatesToCall.map((candidate) => ({
+      const newActivities: ActivityItem[] = validCandidates.map((candidate) => ({
         id: `${Date.now()}-${candidate.id}`,
         candidateName: candidate.name,
         type: 'call',
