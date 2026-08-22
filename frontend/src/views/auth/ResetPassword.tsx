@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Loader2, KeyRound, EyeOff, Eye } from 'lucide-react';
-import { API_URL } from '../../config';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
