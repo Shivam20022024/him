@@ -120,13 +120,16 @@ export const hiringApi = {
     return data;
   },
 
-  async getCandidates(filter: CandidateFilter): Promise<CandidateResponse> {
+  async getCandidates(filter: CandidateFilter, date?: string): Promise<CandidateResponse> {
     try {
       let endpoint = '/candidates';
       if (filter === 'interested') {
         endpoint = '/final';
       } else if (filter === 'shortlisted') {
         endpoint = '/shortlisted';
+      }
+      if (date) {
+        endpoint += `?date=${date}`;
       }
 
       const { data } = await hiringClient.get<any[]>(endpoint);
@@ -225,15 +228,16 @@ export const hiringApi = {
     }
   },
 
-  async downloadExcel(type: 'candidates' | 'calls'): Promise<void> {
+  async downloadExcel(type: 'candidates' | 'calls', date?: string): Promise<void> {
     try {
-      const response = await hiringClient.get(`/export/${type}`, {
+      const url = date ? `/export/${type}?date=${date}` : `/export/${type}`;
+      const response = await hiringClient.get(url, {
         responseType: 'blob'
       });
       const orgId = localStorage.getItem('activeOrganizationId') || 'data';
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
-      link.href = url;
+      link.href = downloadUrl;
       link.setAttribute('download', `${type}_${orgId}.xlsx`);
       document.body.appendChild(link);
       link.click();

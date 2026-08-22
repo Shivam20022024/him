@@ -1,6 +1,12 @@
 import React from 'react';
+import { Calendar } from 'lucide-react';
 
-const DashboardHeader: React.FC = () => {
+interface DashboardHeaderProps {
+  selectedDate?: string;
+  onDateChange?: (date: string) => void;
+}
+
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({ selectedDate, onDateChange }) => {
   return (
     <div className="rounded-xl border border-slate-200 bg-white px-5 py-6 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -15,6 +21,17 @@ const DashboardHeader: React.FC = () => {
             A concise view of candidate flow, progress, and next steps.
           </p>
         </div>
+        {onDateChange && (
+          <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-lg border border-slate-200">
+            <Calendar className="h-4 w-4 text-slate-500" />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => onDateChange(e.target.value)}
+              className="bg-transparent text-sm font-medium text-slate-700 outline-none focus:ring-0 border-none p-0 cursor-pointer"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

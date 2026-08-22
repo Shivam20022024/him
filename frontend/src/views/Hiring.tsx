@@ -34,13 +34,17 @@ const Hiring: React.FC = () => {
   const [currentJob, setCurrentJob] = useState<Job | null>(null);
   const [selectedForInterview, setSelectedForInterview] = useState<Candidate | null>(null);
   const [viewingResult, setViewingResult] = useState<Candidate | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
   const pipelineRef = useRef<HTMLDivElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
-  const loadCandidates = async (silent = false) => {
+  const loadCandidates = async (silent = false, dateToLoad?: string) => {
     if (!silent) setLoading(true);
     try {
-      const response = await hiringApi.getCandidates('all');
+      const response = await hiringApi.getCandidates('all', dateToLoad || selectedDate);
       // Only show candidates in the pipeline if they are from the live API
       if (response.source === 'api') {
         setCandidates(response.candidates);
@@ -62,7 +66,7 @@ const Hiring: React.FC = () => {
   };
 
   useEffect(() => {
-    const startFreshSession = async () => {
+    const fetchInitialData = async () => {
       setLoading(true);
       setCandidates([]);
       setActivities([]);
@@ -81,24 +85,11 @@ const Hiring: React.FC = () => {
         }
       }
 
-      const resetResult = await hiringApi.resetSession();
-      if (!resetResult.success) {
-        await loadCandidates();
-        setNotification({
-          tone: 'warning',
-          message: 'Could not fully clear the previous hiring session. Loading current available data instead.',
-        });
-      } else {
-        await loadCandidates();
-        setNotification({
-          tone: 'info',
-          message: 'Fresh hiring session started. Upload resumes to build a new shortlist at runtime.',
-        });
-      }
+      loadCandidates(false, selectedDate);
     };
 
-    startFreshSession();
-  }, []);
+    fetchInitialData();
+  }, [selectedDate]);
 
   // Real-time polling for status updates
   useEffect(() => {
@@ -421,7 +412,7 @@ const Hiring: React.FC = () => {
       <div className="mx-auto max-w-7xl space-y-5">
         {notification && <NotificationBanner tone={notification.tone} message={notification.message} />}
 
-        <DashboardHeader />
+        <DashboardHeader selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
         <EnhancedStatsCards
           stats={[
@@ -457,8 +448,8 @@ const Hiring: React.FC = () => {
           onStartOutreachAll={handleStartCallingAll}
           onSendEmails={handleSendEmails}
           onViewResults={scrollToResults}
-          onDownloadCandidates={() => hiringApi.downloadExcel('candidates')}
-          onDownloadCalls={() => hiringApi.downloadExcel('calls')}
+          onDownloadCandidates={() => hiringApi.downloadExcel('candidates', selectedDate)}
+          onDownloadCalls={() => hiringApi.downloadExcel('calls', selectedDate)}
         />
 
         {showAddCandidate && (

@@ -314,10 +314,21 @@ async def get_shortlisted_candidates(org_id: str = Depends(get_context_organizat
 
 
 @router.get("/candidates")
-async def get_all_candidates(org_id: str = Depends(get_context_organization_id)):
-    logger.info("Fetching all candidates...")
+async def get_all_candidates(date: str = None, org_id: str = Depends(get_context_organization_id)):
+    logger.info(f"Fetching all candidates... date={date}")
     db = get_db()
-    cursor = db.candidates.find({"organization_id": org_id}).sort("created_at", -1)
+    
+    query = {"organization_id": org_id}
+    if date:
+        try:
+            from datetime import datetime, timedelta
+            start_date = datetime.strptime(date, "%Y-%m-%d")
+            end_date = start_date + timedelta(days=1)
+            query["created_at"] = {"$gte": start_date, "$lt": end_date}
+        except ValueError:
+            logger.warning(f"Invalid date format received: {date}")
+
+    cursor = db.candidates.find(query).sort("created_at", -1)
     candidates = await cursor.to_list(length=1000)
 
     results = [format_candidate_response(c) for c in candidates]
@@ -365,11 +376,48 @@ async def get_final_candidates(org_id: str = Depends(get_context_organization_id
     return results
 
 @router.get("/export/candidates")
-async def export_candidates(org_id: str = Depends(get_context_organization_id)):
-    file_path = ExcelService.get_candidate_file_path(org_id)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="No candidate file found for this organization.")
-    return FileResponse(path=file_path, filename=f"candidates_{org_id}.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+async def export_candidates(date: str = None, org_id: str = Depends(get_context_organization_id)):
+    db = get_db()
+    query = {"organization_id": org_id}
+    if date:
+        try:
+            from datetime import datetime, timedelta
+            start_date = datetime.strptime(date, "%Y-%m-%d")
+            end_date = start_date + timedelta(days=1)
+            query["created_at"] = {"$gte": start_date, "$lt": end_date}
+        except ValueError:
+            pass
+
+    cursor = db.candidates.find(query).sort("created_at", -1)
+    candidates = await cursor.to_list(length=1000)
+
+    import tempfile
+    from openpyxl import Workbook
+    from app.services.excel_service import ExcelService
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Candidates"
+    ws.append(ExcelService.HEADERS)
+
+    for c in candidates:
+        row = [
+            str(c.get("id", "N/A")),
+            c.get("name", "N/A"),
+            c.get("email", "N/A"),
+            f"{c.get('resume_score', 0)}%",
+            c.get("status", "pending"),
+            c.get("interest", "pending"),
+            c.get("created_at", datetime.now()).strftime("%Y-%m-%d %H:%M:%S") if isinstance(c.get("created_at"), datetime) else "N/A"
+        ]
+        ws.append(row)
+
+    fd, temp_path = tempfile.mkstemp(suffix=".xlsx")
+    os.close(fd)
+    wb.save(temp_path)
+    
+    filename = f"candidates_{org_id}_{date}.xlsx" if date else f"candidates_{org_id}.xlsx"
+    return FileResponse(path=temp_path, filename=filename, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 @router.get("/export/calls")
 async def export_call_results(org_id: str = Depends(get_context_organization_id)):
