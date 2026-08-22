@@ -126,34 +126,10 @@ const PremiumResultsSection: React.FC<PremiumResultsSectionProps> = ({
                   {step.active ? <CheckCircle2 size={18} className="text-emerald-500" /> : <div className="h-4 w-4 rounded-full border-2 border-slate-100" />}
                 </li>
               ))}
-              <li className="pt-4 border-t border-slate-50">
-                <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-3">
-                      <div className={`p-1.5 rounded-lg ${c.interview_scheduled ? 'bg-purple-50 text-purple-600' : 'bg-slate-50 text-slate-300'}`}>
-                        <Calendar size={16} />
-                      </div>
-                      <span className={`text-sm font-bold tracking-tight ${c.interview_scheduled ? 'text-purple-600' : 'text-slate-300'}`}>Interview Scheduled</span>
-                   </div>
-                   <span className={`text-xs font-black ${c.interview_scheduled ? 'text-purple-600' : 'text-slate-300'}`}>
-                      {c.interview_date || c.interview_time || "Pending"}
-                   </span>
-                </div>
-              </li>
+
             </ul>
 
-            {/* Assessment Scores */}
-            <div className="pt-4 border-t border-slate-100 grid grid-cols-3 gap-2">
-               {[
-                 { label: "Comm.", score: c.communication_score, color: "text-blue-600", bg: "bg-blue-50" },
-                 { label: "Tech.", score: c.technical_score, color: "text-emerald-600", bg: "bg-emerald-50" },
-                 { label: "Conf.", score: c.confidence_score, color: "text-purple-600", bg: "bg-purple-50" }
-               ].map((s, i) => (
-                 <div key={i} className={`${s.bg} rounded-2xl p-2 text-center border border-slate-100/50`}>
-                    <div className="text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1">{s.label}</div>
-                    <div className={`text-xs font-black ${s.color}`}>{s.score !== undefined ? `${s.score}/10` : "—"}</div>
-                 </div>
-               ))}
-            </div>
+
           </div>
 
           {/* Right Section: Skills Intelligence */}

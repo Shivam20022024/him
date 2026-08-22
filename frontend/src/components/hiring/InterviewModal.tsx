@@ -467,26 +467,13 @@ Say:
                          </div>
 
                          {mode === 'result' && (
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4">
                                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
                                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Interest</p>
                                   <p className="text-sm font-bold text-slate-900 mt-1">{candidate.interest_status || candidate.interest || 'Confirmed'}</p>
                                 </div>
-                               <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Interview</p>
-                                  <p className={`text-sm font-bold mt-1 ${candidate.interview_scheduled ? 'text-purple-600' : 'text-slate-500'}`}>
-                                    {candidate.interview_date || candidate.interview_time || 'Not Scheduled'}
-                                  </p>
-                               </div>
                             </div>
                          )}
-
-                         <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100/50 shadow-sm">
-                            <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">AI Recommendation</h4>
-                            <p className="text-lg font-black text-slate-900 leading-tight">
-                              {evaluation.recommendation || "Pending recommendation..."}
-                            </p>
-                         </div>
 
                          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
                             <h4 className="font-bold text-slate-900 mb-2">Recruiter Summary</h4>
