@@ -26,7 +26,11 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
     );
 
     filtered.sort((a, b) => {
-      if (sortBy === 'score') return b.resume_score - a.resume_score;
+      if (sortBy === 'score') {
+        const scoreA = a.screening_score !== undefined ? a.screening_score : a.resume_score;
+        const scoreB = b.screening_score !== undefined ? b.screening_score : b.resume_score;
+        return scoreB - scoreA;
+      }
       if (sortBy === 'name') return a.name.localeCompare(b.name);
       if (sortBy === 'date') {
         const dateA = new Date(a.created_at || 0).getTime();
@@ -198,10 +202,11 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
                       <td className="px-6 py-5">
                         <div
                           className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${getScoreColor(
-                            candidate.resume_score
+                            candidate.screening_score !== undefined ? candidate.screening_score : candidate.resume_score
                           )}`}
+                          title={candidate.screening_score !== undefined ? "Post-Call AI Score" : "Initial Resume Score"}
                         >
-                          {candidate.resume_score}%
+                          {candidate.screening_score !== undefined ? candidate.screening_score : candidate.resume_score}%
                         </div>
                       </td>
                       <td className="px-6 py-5">
