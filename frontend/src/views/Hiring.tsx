@@ -85,13 +85,11 @@ const Hiring: React.FC = () => {
           setShowAddCandidate(true);
         } catch (e) {
           console.error("Failed to fetch job", e);
-          navigate('/jobs');
-          return;
+          setShowAddCandidate(true);
         }
       } else {
-        // Redirect to jobs page if no job context is provided
-        navigate('/jobs');
-        return;
+        // No job selected, show the generic add candidate panel
+        setShowAddCandidate(true);
       }
 
       loadCandidates(false, selectedDate);

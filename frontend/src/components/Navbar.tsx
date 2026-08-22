@@ -85,6 +85,15 @@ const Navbar: React.FC = () => {
               >
                 Jobs
               </Link>
+              <Link
+                to="/hiring"
+                className={`px-5 py-2 text-sm font-semibold rounded-full transition-all duration-300 ${isActive('/hiring')
+                    ? 'bg-white text-blue-600 shadow-sm border border-slate-100'
+                    : 'text-slate-600 hover:text-slate-900'
+                  }`}
+              >
+                Hiring
+              </Link>
             </div>
           )}
 
@@ -133,6 +142,7 @@ const Navbar: React.FC = () => {
               {user ? (
                 <div className="flex flex-col gap-2">
                    {user.role !== 'SUPER_ADMIN' && (
+                    <>
                       <Link
                         to="/jobs"
                         onClick={closeMobileMenu}
@@ -140,6 +150,14 @@ const Navbar: React.FC = () => {
                       >
                         Jobs Board
                       </Link>
+                      <Link
+                        to="/hiring"
+                        onClick={closeMobileMenu}
+                        className="flex items-center justify-between px-4 py-4 rounded-2xl text-slate-900 font-bold hover:bg-slate-50 transition-colors"
+                      >
+                        Hiring Automation
+                      </Link>
+                    </>
                   )}
                   <div className="h-px bg-slate-100 my-2"></div>
                   <button
