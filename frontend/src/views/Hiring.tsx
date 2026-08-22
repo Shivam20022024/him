@@ -330,6 +330,16 @@ const Hiring: React.FC = () => {
 
 
   const handleCallCandidate = async (candidate: Candidate) => {
+    // Prevent double clicking if already calling
+    if (candidate.status === 'calling') return;
+
+    // Optimistically set to calling
+    setCandidates((current) =>
+      current.map((item) =>
+        item.id === candidate.id ? { ...item, status: 'calling' } : item
+      )
+    );
+
     try {
       setNotification({
         tone: 'info',
@@ -342,8 +352,6 @@ const Hiring: React.FC = () => {
         throw new Error(result.message || 'Call failed');
       }
 
-      // Activity update removed per requirement to focus on uploads
-
       setNotification({
         tone: 'success',
         message: `AI Agent call successfully triggered for ${candidate.name}.`,
@@ -355,6 +363,12 @@ const Hiring: React.FC = () => {
         )
       );
     } catch (err: any) {
+      // Revert status on failure
+      setCandidates((current) =>
+        current.map((item) =>
+          item.id === candidate.id ? { ...item, status: candidate.status } : item
+        )
+      );
       setNotification({
         tone: 'warning',
         message: err.message || `Failed to initiate AI call for ${candidate.name}. Please check your Bolna configuration.`,

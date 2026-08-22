@@ -160,7 +160,7 @@ class BolnaService:
         bolna_call_id = payload.get("call_id") or payload.get("execution_id") or payload.get("id") or payload.get("executionId")
         
         # Robust status check for completion
-        completed_statuses = ["completed", "success", "done", "ended", "finished", "terminated"]
+        completed_statuses = ["completed", "success", "done", "ended", "finished", "terminated", "failed", "cancelled", "no-answer", "busy", "canceled", "error"]
         is_completed = bolna_status in completed_statuses
         
         update_doc = {

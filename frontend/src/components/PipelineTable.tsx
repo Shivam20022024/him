@@ -49,11 +49,11 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
         </span>
       );
 
-    if (normalizedStatus === 'interviewed' || normalizedInterest === 'interviewed')
+    if (normalizedStatus === 'interviewed' || normalizedInterest === 'interviewed' || normalizedStatus === 'completed')
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-800">
           <div className="h-1.5 w-1.5 rounded-full bg-violet-600" />
-          Interviewed
+          Completed
         </span>
       );
     if (normalizedStatus === 'interested' || normalizedInterest === 'interested')
@@ -170,6 +170,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
                 {filteredAndSorted.map((candidate) => {
                   const disabled =
                     candidate.status === 'calling' ||
+                    candidate.status === 'completed' ||
                     candidate.status === 'interviewing' ||
                     candidate.status === 'interviewed' ||
                     candidate.status === 'ai_call_pending' ||
