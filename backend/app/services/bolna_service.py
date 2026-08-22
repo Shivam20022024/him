@@ -66,7 +66,7 @@ class BolnaService:
     async def extract_metrics_with_llm(transcript: str) -> dict:
         """Fallback to extract metrics from transcript using LLM if Bolna didn't provide them."""
         headers = {
-            "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}",
+            "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
             "Content-Type": "application/json"
         }
         prompt = f"""
@@ -98,7 +98,7 @@ class BolnaService:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1") + "/chat/completions",
+                    f"{settings.OPENAI_API_BASE}/chat/completions",
                     headers=headers,
                     json=payload,
                     timeout=30.0
