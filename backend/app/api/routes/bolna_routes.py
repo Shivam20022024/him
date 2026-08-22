@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends, Header
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.services.bolna_service import BolnaService
 from app.core.database import get_db
+from app.core.config import settings
 import logging
 from datetime import datetime
 from pydantic import BaseModel
@@ -11,6 +13,22 @@ class BolnaCallbackRequest(BaseModel):
     callback_date: str
     callback_time: str
     callback_notes: Optional[str] = ""
+
+security = HTTPBearer()
+
+def verify_callback_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Verifies that the provided Bearer token matches BOLNA_CALLBACK_API_TOKEN."""
+    expected_token = settings.BOLNA_CALLBACK_API_TOKEN
+    
+    if not expected_token:
+        # If no token is configured in environment, fail secure
+        logger.error("BOLNA_CALLBACK_API_TOKEN is not configured in the environment.")
+        raise HTTPException(status_code=401, detail="Callback API token not configured")
+        
+    if credentials.credentials != expected_token:
+        raise HTTPException(status_code=401, detail="Invalid callback API token")
+        
+    return credentials.credentials
 
 router = APIRouter(prefix="/bolna", tags=["Bolna Integration"])
 logger = logging.getLogger(__name__)
@@ -115,7 +133,7 @@ async def bolna_webhook(request: Request):
         return {"status": "error", "message": str(e)}
 
 @router.post("/callback")
-async def bolna_callback_request(payload: BolnaCallbackRequest):
+async def bolna_callback_request(payload: BolnaCallbackRequest, token: str = Depends(verify_callback_token)):
     """Handles mid-conversation callback requests from Bolna Custom Functions."""
     try:
         if not payload.candidate_id or not payload.callback_date or not payload.callback_time:

@@ -47,6 +47,7 @@ class Settings(BaseSettings):
     # Bolna Settings
     BOLNA_API_KEY: Optional[str] = None
     BOLNA_AGENT_ID: Optional[str] = None
+    BOLNA_CALLBACK_API_TOKEN: Optional[str] = None
 
     # Email Settings
     SMTP_HOST: Optional[str] = None
