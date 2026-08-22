@@ -9,15 +9,30 @@ class ClassificationService:
         return await ClassificationService.classify_screening_response(transcript, "Are you interested in this role?")
 
     @staticmethod
-    async def classify_screening_response(transcript: str, question_text: str):
+    async def classify_screening_response(transcript: str, question: dict):
         """
-        Classifies screening responses for any question.
-        Determines the output format based on the question content or defaults to yes/no.
+        Classifies screening responses for any question based on intent_mapping.
         """
-        # Determine if it's an interest check or general yes/no
-        is_interest = "interested" in question_text.lower() or "interest" in question_text.lower()
-        valid_results = '"interested" | "not_interested" | "unclear"' if is_interest else '"yes" | "no" | "unclear"'
-        
+        question_text = question.get("question_text", "")
+        intent_mapping = question.get("intent_mapping", "")
+        if intent_mapping and isinstance(intent_mapping, str) and intent_mapping.strip():
+            import json
+            try:
+                mapping_dict = json.loads(intent_mapping)
+                valid_results = " | ".join([f'"{k}"' for k in mapping_dict.keys()]) + ' | "unclear"'
+                rules = f"- Map the response to one of the intents based on the candidate's meaning.\n- If they provide a callback time/date, extract it into 'callback_date' and 'callback_time'."
+            except:
+                valid_results = '"yes" | "no" | "unclear"'
+                rules = "- Map positive intent to yes.\n- Map negative intent to no."
+        else:
+            is_interest = "interested" in question_text.lower() or "interest" in question_text.lower()
+            valid_results = '"interested" | "not_interested" | "unclear"' if is_interest else '"yes" | "no" | "unclear"'
+            rules = """
+            - If the candidate says "yes", "sure", "definitely", "I am", "I have", or similar positive intent, map to "yes" or "interested".
+            - If the candidate says "no", "not really", "I don't think so", "not available", or similar negative intent, map to "no" or "not_interested".
+            - If the response is vague, says "maybe", "I'll have to check", or is cut off/gibberish, map to "unclear".
+            """
+
         headers = {
             "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
             "Content-Type": "application/json"
@@ -33,14 +48,14 @@ class ClassificationService:
         Based on the transcript, classify the response into one of the allowed categories: {valid_results}.
         
         Rules:
-        - If the candidate says "yes", "sure", "definitely", "I am", "I have", or similar positive intent, map to "yes" or "interested".
-        - If the candidate says "no", "not really", "I don't think so", "not available", or similar negative intent, map to "no" or "not_interested".
-        - If the response is vague, says "maybe", "I'll have to check", or is cut off/gibberish, map to "unclear".
+        {rules}
         
         Return STRICTLY a JSON object. No extra text.
         {{
             "result": "result_value_here",
-            "reason": "Brief explanation of why you chose this classification based on the transcript."
+            "reason": "Brief explanation of why you chose this classification based on the transcript.",
+            "callback_date": "If requested, extract date (e.g. tomorrow, next Monday). Otherwise null.",
+            "callback_time": "If requested, extract time (e.g. 6 PM, morning). Otherwise null."
         }}
         """
         

@@ -4,6 +4,7 @@ from app.services.classification_service import ClassificationService
 from app.services.twilio_service import TwilioService
 from app.services.hiring_voice_service import HiringVoiceService
 from app.services.question_service import QuestionService
+import pandas as pd
 from app.core.database import get_db
 from app.core.config import settings
 import os
@@ -163,8 +164,18 @@ async def twilio_webhook(candidate_id: str, step: str):
         response.redirect(TwilioService.build_url(f"/voice/twilio-webhook/{candidate_id}/closing"))
         return Response(content=str(response), media_type="application/xml")
 
-    prompt = question["question_text"]
-    logger.info(f"Speaking question {step_index}: '{prompt}'")
+    # Determine if this is a repeat attempt
+    db = get_db()
+    candidate = await db.candidates.find_one({"id": candidate_id})
+    existing_responses = candidate.get("screening_responses", []) if candidate else []
+    attempts = len([r for r in existing_responses if r.get("question_id") == question.get("question_id")])
+    
+    if attempts > 0 and pd.notna(question.get("clarification")) and str(question.get("clarification")).strip():
+        prompt = str(question["clarification"])
+        logger.info(f"Speaking CLARIFICATION for step {step_index} (Attempt {attempts + 1}): '{prompt}'")
+    else:
+        prompt = str(question["question_text"])
+        logger.info(f"Speaking question {step_index} (Attempt {attempts + 1}): '{prompt}'")
     response.say(prompt, voice=settings.TWILIO_TTS_VOICE)
     
     # 5. Handle Recording

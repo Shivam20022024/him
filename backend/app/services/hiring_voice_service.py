@@ -41,11 +41,13 @@ class HiringVoiceService:
         logger.info(f"Transcript for {candidate_id} [Step {step_index}]: {transcript}")
         
         # 2. Classify response
-        # We can pass the question_text to help classification
-        classification_raw = await ClassificationService.classify_screening_response(transcript, question["question_text"])
+        # We pass the full question dictionary to use intent mapping
+        classification_raw = await ClassificationService.classify_screening_response(transcript, question)
         classification = json.loads(classification_raw)
         result = classification.get("result", "unclear")
-        logger.info(f"Classification for {candidate_id} [Step {step_index}]: {result}")
+        callback_date = classification.get("callback_date")
+        callback_time = classification.get("callback_time")
+        logger.info(f"Classification for {candidate_id} [Step {step_index}]: {result} (Date: {callback_date}, Time: {callback_time})")
         
         # 3. Prepare DB Update
         now = datetime.utcnow()
@@ -63,23 +65,61 @@ class HiringVoiceService:
             {"$push": {"screening_responses": response_obj}}
         )
         
+        # Check how many attempts for this question
+        existing_responses = candidate.get("screening_responses", [])
+        attempts = len([r for r in existing_responses if r.get("question_id") == question.get("question_id")]) + 1
+        
         # 4. Determine next step
         total_questions = QuestionService.get_total_questions()
         next_step_index = step_index + 1
         
-        # Special logic: Skip if "not interested" (Assuming first question is interest check)
-        if step_index == 0 and result == "not_interested":
-            logger.info(f"Candidate {candidate_id} marked as not interested. Stopping.")
-            await db.candidates.update_one(
-                {"id": candidate_id},
-                {"$set": {
-                    "status": "not_interested",
-                    "interest": "not_interested",
-                    "final_status": "rejected",
-                    "call_step": "closing"
-                }}
-            )
-            return "closing"
+        # Handle unclear / multiple attempts
+        if result == "unclear":
+            max_attempts = question.get("max_attempts")
+            
+            try:
+                max_attempts = int(max_attempts)
+            except (ValueError, TypeError):
+                max_attempts = 1
+            
+            if attempts < max_attempts:
+                logger.info(f"Candidate {candidate_id} response unclear. Attempt {attempts} of {max_attempts}. Repeating step {step_index}.")
+                # Do NOT increment call_step. Return the same step so it repeats.
+                return str(step_index)
+            else:
+                logger.info(f"Candidate {candidate_id} response unclear after {attempts} attempts. Moving to next step.")
+                # We exceeded max attempts, we will move to next step.
+
+        # Special logic: Availability check (Step 0)
+        if step_index == 0:
+            if result == "REJECTED" or result == "not_interested":
+                logger.info(f"Candidate {candidate_id} marked as not interested. Stopping.")
+                await db.candidates.update_one(
+                    {"id": candidate_id},
+                    {"$set": {
+                        "status": "not_interested",
+                        "interest": "not_interested",
+                        "final_status": "rejected",
+                        "call_step": "closing"
+                    }}
+                )
+                return "closing"
+            elif result in ["NOT_AVAILABLE", "CALLBACK_REQUESTED"]:
+                logger.info(f"Candidate {candidate_id} requested callback. Stopping.")
+                await db.candidates.update_one(
+                    {"id": candidate_id},
+                    {"$set": {
+                        "status": "CALLBACK_REQUIRED",
+                        "callback_requested": True,
+                        "callback_date": callback_date,
+                        "callback_time": callback_time,
+                        "call_step": "closing"
+                    }}
+                )
+                return "closing"
+            elif result == "AVAILABLE":
+                pass # Proceed normally
+
 
         # Check if we finished all questions
         if next_step_index >= total_questions:
