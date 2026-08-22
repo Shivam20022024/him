@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 // Views
 import Home from "./views/Home";
+
 import Hiring from "./views/Hiring";
 import Jobs from "./views/Jobs";
 import Login from "./views/auth/Login";
@@ -26,18 +27,11 @@ function App() {
       <main className={isSuperAdminRoute ? '' : 'relative pt-28'}>
         <Routes>
           {/* Public Routes */}
+          <Route path="/" element={<Home onNavigate={() => {}} />} />
           <Route path="/login" element={<Login />} />
 
           {/* Protected Organization Routes */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Home onNavigate={() => {}} />
-              </ProtectedRoute>
-            } 
-          />
+          <Route path="/dashboard" element={<Navigate to="/jobs" replace />} />
           <Route 
             path="/jobs" 
             element={
