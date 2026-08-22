@@ -60,6 +60,15 @@ const InterviewModal: React.FC<InterviewModalProps> = ({ candidate, onClose, onC
        setHistory(candidate.interview_transcript as any);
     }
   }, [mode, candidate.transcript, candidate.interview_transcript]);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
   const [customPrompt, setCustomPrompt] = useState(
     `You are an AI voice recruiter conducting a phone screening interview for Novlantis.
 
