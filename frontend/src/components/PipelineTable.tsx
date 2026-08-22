@@ -1,16 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { PhoneCall, Search } from 'lucide-react';
+import { PhoneCall, Search, Trash2 } from 'lucide-react';
 import { Candidate } from '../types';
 
 interface PipelineTableProps {
   candidates: Candidate[];
   onCallCandidate?: (candidate: Candidate) => void;
+  onDeleteCandidate?: (candidate: Candidate) => void;
   isLoading?: boolean;
 }
 
 const PipelineTable: React.FC<PipelineTableProps> = ({
   candidates,
   onCallCandidate,
+  onDeleteCandidate,
   isLoading = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -206,18 +208,30 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
                         {getStatusBadge(candidate.status, candidate.interest)}
                       </td>
                       <td className="px-6 py-5">
-                        <button
-                          onClick={() => onCallCandidate?.(candidate)}
-                          disabled={disabled}
-                          className={`inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold transition duration-200 ${
-                            disabled
-                              ? 'cursor-not-allowed bg-slate-100 text-slate-400'
-                              : 'bg-blue-600 text-white hover:bg-blue-700'
-                          }`}
-                        >
-                          <PhoneCall className="h-3.5 w-3.5" />
-                          Call
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => onCallCandidate?.(candidate)}
+                            disabled={disabled}
+                            className={`inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold transition duration-200 ${
+                              disabled
+                                ? 'cursor-not-allowed bg-slate-100 text-slate-400'
+                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
+                          >
+                            <PhoneCall className="h-3.5 w-3.5" />
+                            Call
+                          </button>
+                          
+                          {onDeleteCandidate && (
+                            <button
+                              onClick={() => onDeleteCandidate(candidate)}
+                              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
+                              title="Remove Candidate"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

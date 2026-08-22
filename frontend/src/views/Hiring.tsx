@@ -376,6 +376,30 @@ const Hiring: React.FC = () => {
     }
   };
 
+  const handleDeleteCandidate = async (candidate: Candidate) => {
+    if (!window.confirm(`Are you sure you want to remove ${candidate.name} from the pipeline?`)) {
+      return;
+    }
+
+    try {
+      const result = await hiringApi.deleteCandidate(candidate.id);
+      if (result.success) {
+        setCandidates((current) => current.filter((c) => c.id !== candidate.id));
+        setNotification({
+          tone: 'success',
+          message: `${candidate.name} removed successfully.`,
+        });
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error: any) {
+      setNotification({
+        tone: 'warning',
+        message: error.message || 'Failed to remove candidate.',
+      });
+    }
+  };
+
   const handleInterviewCandidate = (candidate: Candidate) => {
     console.log("DEBUG: Setting selectedForInterview to:", candidate.name);
     setSelectedForInterview(candidate);
@@ -533,10 +557,9 @@ const Hiring: React.FC = () => {
                 ) : (
                   <PipelineTable
                     candidates={candidates}
+                    onCallCandidate={handleCallCandidate}
+                    onDeleteCandidate={handleDeleteCandidate}
                     isLoading={false}
-                    onCallCandidate={(candidate) => {
-                      handleCallCandidate(candidate);
-                    }}
                   />
                 )}
               </div>

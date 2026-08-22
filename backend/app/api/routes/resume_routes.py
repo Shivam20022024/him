@@ -301,6 +301,14 @@ async def add_manual_candidate(candidate: ManualCandidate, org_id: str = Depends
         role=candidate_data.get("role")
     )
 
+@router.delete("/candidates/{candidate_id}")
+async def delete_candidate(candidate_id: str, org_id: str = Depends(get_context_organization_id)):
+    db = get_db()
+    result = await db.candidates.delete_one({"id": candidate_id, "organization_id": org_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    return {"status": "success", "message": "Candidate deleted successfully"}
+
 
 @router.get("/shortlisted")
 async def get_shortlisted_candidates(org_id: str = Depends(get_context_organization_id)):

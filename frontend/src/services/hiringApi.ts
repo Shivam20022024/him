@@ -142,6 +142,15 @@ export const hiringApi = {
     }
   },
 
+  async deleteCandidate(candidateId: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const { data } = await hiringClient.delete(`/candidates/${candidateId}`);
+      return { success: true, message: data.message };
+    } catch (error) {
+      return { success: false, message: extractApiErrorMessage(error) };
+    }
+  },
+
   async uploadResume(file: File, jobDescription: string, jobDescriptionFile?: File | null, skipAi: boolean = false): Promise<{ candidate: Candidate; source: DataSource }> {
     try {
       const formData = new FormData();
