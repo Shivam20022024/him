@@ -413,7 +413,7 @@ Say:
       <audio ref={audioRef} className="hidden" />
       <div className="grid h-full max-h-[900px] w-full max-w-6xl overflow-hidden rounded-[32px] bg-white shadow-2xl lg:grid-cols-[1fr_400px]">
         {/* Main Call View */}
-        <div className="flex flex-col border-r border-slate-100 bg-slate-50">
+        <div className="flex flex-col border-r border-slate-100 bg-slate-50 min-h-0 overflow-hidden">
           <div className="flex items-center justify-between p-6">
             <div className="flex items-center gap-3">
               <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
