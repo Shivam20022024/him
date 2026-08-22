@@ -3,6 +3,14 @@ from app.services.bolna_service import BolnaService
 from app.core.database import get_db
 import logging
 from datetime import datetime
+from pydantic import BaseModel
+from typing import Optional
+
+class BolnaCallbackRequest(BaseModel):
+    candidate_id: str
+    callback_date: str
+    callback_time: str
+    callback_notes: Optional[str] = ""
 
 router = APIRouter(prefix="/bolna", tags=["Bolna Integration"])
 logger = logging.getLogger(__name__)
@@ -105,6 +113,24 @@ async def bolna_webhook(request: Request):
     except Exception as e:
         logger.error(f"Bolna Webhook Error: {str(e)}")
         return {"status": "error", "message": str(e)}
+
+@router.post("/callback")
+async def bolna_callback_request(payload: BolnaCallbackRequest):
+    """Handles mid-conversation callback requests from Bolna Custom Functions."""
+    try:
+        if not payload.candidate_id or not payload.callback_date or not payload.callback_time:
+            raise HTTPException(status_code=400, detail="Missing required callback fields")
+            
+        result = await BolnaService.handle_callback_request(payload)
+        if not result.get("success"):
+            raise HTTPException(status_code=404, detail="Candidate not found")
+            
+        return {"success": True, "status": "callback_required"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Bolna Callback Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/sync-call/{candidate_id}")
 async def sync_candidate_call(candidate_id: str):

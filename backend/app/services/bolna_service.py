@@ -131,6 +131,32 @@ class BolnaService:
         }
 
     @staticmethod
+    async def handle_callback_request(payload: any):
+        """Handles mid-call Bolna custom function callback requests."""
+        db = get_db()
+        candidate = await db.candidates.find_one({"id": payload.candidate_id})
+        
+        if not candidate:
+            logger.error(f"Callback request failed: Candidate {payload.candidate_id} not found.")
+            return {"success": False, "message": "Candidate not found"}
+            
+        update_data = {
+            "status": "callback_required",
+            "callback_requested": True,
+            "callback_date": payload.callback_date,
+            "callback_time": payload.callback_time,
+            "callback_notes": payload.callback_notes,
+            "last_interaction": datetime.utcnow()
+        }
+        
+        await db.candidates.update_one(
+            {"id": payload.candidate_id},
+            {"$set": update_data}
+        )
+        logger.info(f"Callback scheduled for candidate {payload.candidate_id} on {payload.callback_date} at {payload.callback_time}")
+        return {"success": True}
+
+    @staticmethod
     async def process_webhook_payload(payload: dict):
         """
         Processes Bolna webhook payload.
@@ -170,7 +196,6 @@ class BolnaService:
             "bolna_summary": summary,
             "bolna_analysis": analysis or payload.get("extracted_data") or {},
             "bolna_call_id": bolna_call_id,
-            "status": "completed" if is_completed else "calling",
             "call_status": bolna_status,
             "call_duration": call_duration,
             "call_start_time": payload.get("startedAt") or payload.get("initiated_at") or payload.get("telephony_data", {}).get("start_time"),
@@ -180,6 +205,15 @@ class BolnaService:
             "recruiter_verdict": summary, # Default to root summary
             "last_interaction": datetime.utcnow()
         }
+        
+        # Only set status to completed if they aren't already flagged as callback_required
+        candidate_record = await db.candidates.find_one({"id": candidate_id})
+        current_status = candidate_record.get("status") if candidate_record else None
+        
+        if current_status == "callback_required":
+            update_doc["status"] = "callback_required"
+        else:
+            update_doc["status"] = "completed" if is_completed else "calling"
 
         # Extract structured data from analysis or extracted_data if available
         ext_data = payload.get("extracted_data") or {}
@@ -262,13 +296,11 @@ class BolnaService:
                 if "interested" in val_lower and "not" not in val_lower:
                     update_doc["interest"] = "interested"
                     update_doc["status"] = "interested"
-                elif "not" in val_lower:
-                    update_doc["interest"] = "not_interested"
-                    update_doc["status"] = "not_interested"
                 elif any(word in val_lower for word in ["yes", "confirmed", "available", "agree"]):
                     update_doc["interest"] = "interested"
                     update_doc["status"] = "interested"
-                elif any(word in val_lower for word in ["no", "unavailable", "declined"]):
+                elif "not interested" in val_lower or "don't want" in val_lower or "not looking" in val_lower:
+                    # ONLY explicitly reject if they actually say they are not interested
                     update_doc["interest"] = "not_interested"
                     update_doc["status"] = "not_interested"
             
