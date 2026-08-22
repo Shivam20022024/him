@@ -494,6 +494,7 @@ const Hiring: React.FC = () => {
               subtitle: 'Successfully screened by AI',
               trend: aiQualifiedCandidates.length > 0 ? 'up' : 'neutral',
             },
+          ]}
         />
 
         <QuickActionsBar
