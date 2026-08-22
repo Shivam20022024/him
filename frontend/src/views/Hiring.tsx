@@ -487,8 +487,13 @@ const Hiring: React.FC = () => {
               subtitle: 'Awaiting candidate calling',
               trend: pendingCandidates.length > 0 ? 'up' : 'neutral',
             },
-
-          ]}
+            {
+              title: 'AI Qualified',
+              value: aiQualifiedCandidates.length,
+              icon: <Heart className="h-5 w-5" />,
+              subtitle: 'Successfully screened by AI',
+              trend: aiQualifiedCandidates.length > 0 ? 'up' : 'neutral',
+            },
         />
 
         <QuickActionsBar
