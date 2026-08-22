@@ -325,7 +325,10 @@ class BolnaService:
         # Fallback to LLM extraction if Bolna didn't provide metrics and we have a transcript
         if transcript and update_doc.get("status") in ["completed", "interested", "not_interested"]:
             needs_fallback = False
-            if update_doc.get("communication_score") is None or update_doc.get("interest") is None:
+            if (update_doc.get("communication_score") is None or 
+                update_doc.get("interest") is None or
+                update_doc.get("technical_score") is None or
+                update_doc.get("confidence_score") is None):
                 needs_fallback = True
                 
             if needs_fallback:
