@@ -201,12 +201,16 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
                       </td>
                       <td className="px-6 py-5">
                         <div
-                          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${getScoreColor(
-                            candidate.screening_score !== undefined ? candidate.screening_score : candidate.resume_score
-                          )}`}
+                          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${
+                            (candidate.screening_score ?? candidate.resume_score) != null 
+                              ? getScoreColor(candidate.screening_score ?? candidate.resume_score ?? 0)
+                              : 'text-slate-500 bg-slate-50'
+                          }`}
                           title={candidate.screening_score !== undefined ? "Post-Call AI Score" : "Initial Resume Score"}
                         >
-                          {candidate.screening_score !== undefined ? candidate.screening_score : candidate.resume_score}%
+                          {(candidate.screening_score ?? candidate.resume_score) != null
+                            ? `${candidate.screening_score ?? candidate.resume_score}%`
+                            : '-'}
                         </div>
                       </td>
                       <td className="px-6 py-5">
