@@ -66,10 +66,8 @@ class BolnaService:
     async def extract_metrics_with_llm(transcript: str) -> dict:
         """Fallback to extract metrics from transcript using LLM if Bolna didn't provide them."""
         headers = {
-            "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": os.environ.get("OPENROUTER_HTTP_REFERER", "http://localhost:8000"),
-            "X-Title": os.environ.get("OPENROUTER_TITLE", "Voice AI Dashboard")
+            "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}",
+            "Content-Type": "application/json"
         }
         prompt = f"""
         Analyze this recruiter AI interview transcript and extract the following metrics.
@@ -92,7 +90,7 @@ class BolnaService:
         {transcript[-3000:]}
         """
         payload = {
-            "model": os.environ.get("OPENROUTER_MODEL", "google/gemini-2.5-flash"),
+            "model": "gpt-4o",
             "messages": [{"role": "user", "content": prompt}],
             "response_format": {"type": "json_object"}
         }
@@ -100,7 +98,7 @@ class BolnaService:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    os.environ.get("OPENROUTER_API_URL", "https://openrouter.ai/api/v1/chat/completions"),
+                    os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1") + "/chat/completions",
                     headers=headers,
                     json=payload,
                     timeout=30.0
