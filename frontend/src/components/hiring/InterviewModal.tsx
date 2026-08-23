@@ -449,31 +449,6 @@ Say:
                    
                    {evaluation && (
                       <div className="space-y-6">
-                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-center">
-                               <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">Skill Match</p>
-                               <p className="text-4xl font-black text-blue-600 mt-2">{evaluation.skill_match_score}%</p>
-                            </div>
-                            <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-100 flex flex-col items-center justify-center text-center shadow-sm">
-                               <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">Comm. Quality</p>
-                               <p className="text-4xl font-black text-emerald-600 mt-2">{evaluation.communication_quality_score !== null ? `${evaluation.communication_quality_score}%` : 'N/A'}</p>
-                             </div>
-                         </div>
-                         
-                         <div className="grid grid-cols-3 gap-3">
-                            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
-                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Technical</p>
-                               <p className="text-xl font-black text-slate-900 mt-1">{evaluation.technical_score !== undefined && evaluation.technical_score !== null ? `${evaluation.technical_score > 10 ? evaluation.technical_score / 10 : evaluation.technical_score}/10` : '—'}</p>
-                            </div>
-                            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
-                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Confidence</p>
-                               <p className="text-xl font-black text-slate-900 mt-1">{evaluation.confidence_score !== undefined && evaluation.confidence_score !== null ? `${evaluation.confidence_score > 10 ? evaluation.confidence_score / 10 : evaluation.confidence_score}/10` : '—'}</p>
-                            </div>
-                            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
-                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Duration</p>
-                               <p className="text-xl font-black text-slate-900 mt-1">{evaluation.duration || 'N/A'}</p>
-                            </div>
-                         </div>
 
                          {mode === 'result' && (
                             <div className="grid grid-cols-1 gap-4">
