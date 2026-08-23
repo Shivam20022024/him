@@ -194,6 +194,8 @@ class SimulationService:
         {{
             "skill_match_score": 0-100,
             "communication_quality_score": 0-100,
+            "technical_score": 0-100,
+            "confidence_score": 0-100,
             "sentiment": "positive" | "neutral" | "negative",
             "emotion": "confident" | "nervous" | "enthusiastic" | "hesitant",
             "summary": "Short paragraph summary of the interview.",
@@ -227,6 +229,8 @@ class SimulationService:
                 return {
                     "skill_match_score": 0,
                     "communication_quality_score": 0,
+                    "technical_score": 0,
+                    "confidence_score": 0,
                     "summary": "Evaluation failed due to system error.",
                     "pros": [],
                     "cons": []

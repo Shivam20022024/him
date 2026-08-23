@@ -463,11 +463,11 @@ Say:
                          <div className="grid grid-cols-3 gap-3">
                             <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Technical</p>
-                               <p className="text-xl font-black text-slate-900 mt-1">{evaluation.technical_score !== undefined ? `${evaluation.technical_score}/10` : '—'}</p>
+                               <p className="text-xl font-black text-slate-900 mt-1">{evaluation.technical_score !== undefined && evaluation.technical_score !== null ? `${evaluation.technical_score > 10 ? evaluation.technical_score / 10 : evaluation.technical_score}/10` : '—'}</p>
                             </div>
                             <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Confidence</p>
-                               <p className="text-xl font-black text-slate-900 mt-1">{evaluation.confidence_score !== undefined ? `${evaluation.confidence_score}/10` : '—'}</p>
+                               <p className="text-xl font-black text-slate-900 mt-1">{evaluation.confidence_score !== undefined && evaluation.confidence_score !== null ? `${evaluation.confidence_score > 10 ? evaluation.confidence_score / 10 : evaluation.confidence_score}/10` : '—'}</p>
                             </div>
                             <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Duration</p>
