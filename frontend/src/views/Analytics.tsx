@@ -89,7 +89,7 @@ const Analytics: React.FC = () => {
     if (isCallback) {
       return (
         <div className="bg-surface-white p-sm rounded-xl shadow-sm flex flex-col gap-xs">
-          <span className="font-label-compact text-tertiary">{title}</span>
+          <span className="text-sm font-bold tracking-wider text-tertiary">{title}</span>
           <span className="font-headline-lg text-tertiary">{value || 0}</span>
           <span className="font-label-small text-tertiary-fixed-dim">{trend !== undefined ? `${Math.abs(trend)}%` : ''}</span>
         </div>
@@ -98,7 +98,7 @@ const Analytics: React.FC = () => {
 
     return (
       <div className="bg-surface-white p-sm rounded-xl shadow-sm flex flex-col gap-xs relative overflow-hidden">
-        <span className="font-label-compact text-text-muted">{title}</span>
+        <span className="text-sm font-bold tracking-wider text-text-muted">{title}</span>
         <span className="font-headline-lg text-on-surface">{value || 0}</span>
         
         {trend !== undefined ? (
