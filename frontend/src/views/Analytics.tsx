@@ -108,16 +108,12 @@ const Analytics: React.FC = () => {
 
         {/* Overview Cards */}
         {dashboardData && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            <div className="col-span-2"><StatCard title="Total Candidates" value={dashboardData.total_candidates} icon={Users} color="text-slate-900" /></div>
-            <div className="col-span-2"><StatCard title="Screened via AI" value={dashboardData.screened} icon={FileSearch} color="text-blue-600" /></div>
-            <div className="col-span-2"><StatCard title="Interested" value={dashboardData.interested} icon={Heart} color="text-emerald-600" /></div>
-            <div className="col-span-2"><StatCard title="Interviews" value={dashboardData.interviews} icon={Calendar} color="text-purple-600" /></div>
-            
-            <div className="col-span-2"><StatCard title="Calls Completed" value={dashboardData.calls_completed} icon={PhoneCall} color="text-slate-700" /></div>
-            <div className="col-span-2"><StatCard title="Callback Required" value={dashboardData.callback_required} icon={Clock} color="text-amber-500" /></div>
-            <div className="col-span-2"><StatCard title="Selected" value={dashboardData.selected} icon={CheckCircle} color="text-indigo-600" /></div>
-            <div className="col-span-2"><StatCard title="Hired" value={dashboardData.hired} icon={Briefcase} color="text-green-600" /></div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <StatCard title="Total Candidates" value={dashboardData.total_candidates} icon={Users} color="text-slate-900" />
+            <StatCard title="Screened via AI" value={dashboardData.screened} icon={FileSearch} color="text-blue-600" />
+            <StatCard title="Interested" value={dashboardData.interested} icon={Heart} color="text-emerald-600" />
+            <StatCard title="Calls Completed" value={dashboardData.calls_completed} icon={PhoneCall} color="text-slate-700" />
+            <StatCard title="Callback Required" value={dashboardData.callback_required} icon={Clock} color="text-amber-500" />
           </div>
         )}
 
@@ -126,7 +122,7 @@ const Analytics: React.FC = () => {
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-slate-900">Activity Trend</h3>
             <div className="flex bg-slate-100 p-1 rounded-lg">
-              {['candidates', 'screened', 'interested', 'interviews', 'hired'].map(metric => (
+              {['candidates', 'screened', 'interested'].map(metric => (
                 <button
                   key={metric}
                   onClick={() => setTrendMetric(metric)}
@@ -177,14 +173,12 @@ const Analytics: React.FC = () => {
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Calls</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Interested</th>
                   <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Callbacks</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Interviews</th>
-                  <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Hired</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {rolesData.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-8 text-center text-slate-500">No data available for the selected period.</td>
+                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No data available for the selected period.</td>
                   </tr>
                 ) : (
                   rolesData.map((role) => (
@@ -195,8 +189,6 @@ const Analytics: React.FC = () => {
                       <td className="px-6 py-4 text-slate-600">{role.calls_completed}</td>
                       <td className="px-6 py-4 text-emerald-600 font-medium">{role.interested}</td>
                       <td className="px-6 py-4 text-amber-500">{role.callbacks}</td>
-                      <td className="px-6 py-4 text-purple-600 font-medium">{role.interviews}</td>
-                      <td className="px-6 py-4 text-green-600 font-bold">{role.hired}</td>
                     </tr>
                   ))
                 )}
