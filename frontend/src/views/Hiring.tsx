@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BriefcaseBusiness, Heart, PhoneCall, Users, Calendar } from 'lucide-react';
+import { BriefcaseBusiness, Heart, PhoneCall, Users, Calendar, Star } from 'lucide-react';
 import ResumeUpload from '../components/ResumeUpload';
 import DashboardHeader from '../components/DashboardHeader';
 import QuickActionsBar from '../components/QuickActionsBar';
@@ -496,11 +496,11 @@ const Hiring: React.FC = () => {
               trend: aiQualifiedCandidates.length > 0 ? 'up' : 'neutral',
             },
             {
-              title: 'Interviews',
-              value: interviewingCandidates.length,
-              icon: <Calendar className="h-5 w-5" />,
-              subtitle: 'Candidates in interview stage',
-              trend: interviewingCandidates.length > 0 ? 'up' : 'neutral',
+              title: 'Shortlisted',
+              value: shortlistedCandidates.length,
+              icon: <Star className="h-5 w-5" />,
+              subtitle: 'Strong matches (≥70%)',
+              trend: shortlistedCandidates.length > 0 ? 'up' : 'neutral',
             },
           ]}
         />
