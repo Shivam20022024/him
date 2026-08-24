@@ -648,12 +648,7 @@ const Hiring: React.FC = () => {
           />
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
 
-          <p className="text-xs font-medium text-slate-600">
-            Connected to live candidate data
-          </p>
-        </div>
         </div>
       </div>
     </div>
