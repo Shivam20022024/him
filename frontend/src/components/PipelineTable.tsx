@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { PhoneCall, Search, Trash2 } from 'lucide-react';
+import { Search, PhoneCall, Trash2, Clock, CheckCircle2, ChevronDown, ChevronRight, FileText } from 'lucide-react';
 import { Candidate } from '../types';
 
 interface PipelineTableProps {
@@ -17,6 +17,13 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'score' | 'name' | 'date'>('score');
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+
+  const toggleRow = (id: string, e: React.MouseEvent) => {
+    // Prevent toggling when clicking buttons inside the row
+    if ((e.target as HTMLElement).closest('button')) return;
+    setExpandedRowId(expandedRowId === id ? null : id);
+  };
 
   const filteredAndSorted = useMemo(() => {
     let filtered = candidates.filter(
@@ -208,64 +215,130 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
 
 
                   return (
-                    <tr
-                      key={candidate.id}
-                      className="transition-colors duration-200 hover:bg-slate-50 cursor-pointer"
-                    >
-                      <td className="px-6 py-5">
-                        <div className="font-semibold text-slate-900">
-                          {candidate.name}
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="text-sm text-slate-600">
-                          {candidate.email || '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div
-                          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${
-                            (candidate.screening_score ?? candidate.resume_score) != null 
-                              ? getScoreColor(candidate.screening_score ?? candidate.resume_score ?? 0)
-                              : 'text-slate-500 bg-slate-50'
-                          }`}
-                          title={candidate.screening_score !== undefined ? "Post-Call AI Score" : "Initial Resume Score"}
-                        >
-                          {(candidate.screening_score ?? candidate.resume_score) != null
-                            ? `${candidate.screening_score ?? candidate.resume_score}%`
-                            : '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        {getStatusBadge(candidate.status, candidate.interest)}
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => onCallCandidate?.(candidate)}
-                            disabled={disabled}
-                            className={`inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold transition duration-200 ${
-                              disabled
-                                ? 'cursor-not-allowed bg-slate-100 text-slate-400'
-                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                    <React.Fragment key={candidate.id}>
+                      <tr
+                        onClick={(e) => toggleRow(candidate.id, e)}
+                        className={`transition-colors duration-200 hover:bg-slate-50 cursor-pointer ${expandedRowId === candidate.id ? 'bg-slate-50 border-b-0' : ''}`}
+                      >
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-3">
+                            <div className="text-slate-400">
+                              {expandedRowId === candidate.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                            </div>
+                            <div className="font-semibold text-slate-900">
+                              {candidate.name}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="text-sm text-slate-600">
+                            {candidate.email || '-'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div
+                            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${
+                              (candidate.screening_score ?? candidate.resume_score) != null 
+                                ? getScoreColor(candidate.screening_score ?? candidate.resume_score ?? 0)
+                                : 'text-slate-500 bg-slate-50'
                             }`}
+                            title={candidate.screening_score !== undefined ? "Post-Call AI Score" : "Initial Resume Score"}
                           >
-                            <PhoneCall className="h-3.5 w-3.5" />
-                            Call
-                          </button>
-                          
-                          {onDeleteCandidate && (
+                            {(candidate.screening_score ?? candidate.resume_score) != null
+                              ? `${candidate.screening_score ?? candidate.resume_score}%`
+                              : '-'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          {getStatusBadge(candidate.status, candidate.interest)}
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-2">
                             <button
-                              onClick={() => onDeleteCandidate(candidate)}
-                              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
-                              title="Remove Candidate"
+                              onClick={() => onCallCandidate?.(candidate)}
+                              disabled={disabled}
+                              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold transition duration-200 ${
+                                disabled
+                                  ? 'cursor-not-allowed bg-slate-100 text-slate-400'
+                                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                              }`}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <PhoneCall className="h-3.5 w-3.5" />
+                              Call
                             </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+                            
+                            {onDeleteCandidate && (
+                              <button
+                                onClick={() => onDeleteCandidate(candidate)}
+                                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
+                                title="Remove Candidate"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedRowId === candidate.id && (
+                        <tr className="bg-slate-50/50 border-t-0">
+                          <td colSpan={5} className="px-6 py-6 border-b border-slate-200">
+                            <div className="pl-7 grid md:grid-cols-2 gap-8">
+                              <div className="space-y-4">
+                                <div>
+                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Contact & Role</span>
+                                  <div className="text-sm text-slate-700 space-y-1">
+                                    <p><span className="font-medium text-slate-500">Phone:</span> {candidate.phone || "Not provided"}</p>
+                                    <p><span className="font-medium text-slate-500">Role:</span> <span className="uppercase text-blue-600 font-bold">{candidate.role || "Unassigned"}</span></p>
+                                  </div>
+                                </div>
+                                {candidate.summary && (
+                                  <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Summary</span>
+                                    <p className="text-sm text-slate-600 leading-relaxed bg-white p-3 rounded-xl border border-slate-200">
+                                      {candidate.summary}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="space-y-4">
+                                <div>
+                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">AI Screening Skills</span>
+                                  <div className="flex flex-wrap gap-2">
+                                    {candidate.screening_skills ? (
+                                      candidate.screening_skills.split(',').map((s: string) => (
+                                        <span key={s.trim()} className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 shadow-sm">
+                                          {s.trim()}
+                                        </span>
+                                      ))
+                                    ) : (candidate.skills || []).length > 0 ? (
+                                      candidate.skills.map((s: string) => (
+                                        <span key={s} className="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200 shadow-sm">
+                                          {s}
+                                        </span>
+                                      ))
+                                    ) : (
+                                      <span className="text-xs text-slate-400 italic">None identified</span>
+                                    )}
+                                  </div>
+                                </div>
+                                {candidate.missing_skills && candidate.missing_skills.length > 0 && (
+                                  <div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Missing Skills</span>
+                                    <div className="flex flex-wrap gap-2">
+                                      {candidate.missing_skills.map((s: string) => (
+                                        <span key={s} className="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 shadow-sm">
+                                          {s}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
