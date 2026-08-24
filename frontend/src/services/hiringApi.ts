@@ -257,17 +257,69 @@ export const hiringApi = {
       const response = await hiringClient.get(url, {
         responseType: 'blob'
       });
-      const orgId = localStorage.getItem('activeOrganizationId') || 'data';
       const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.setAttribute('download', `${type}_${orgId}.xlsx`);
+      link.setAttribute('download', `candidates_export_${new Date().getTime()}.xlsx`);
       document.body.appendChild(link);
       link.click();
-      link.parentNode?.removeChild(link);
+      link.remove();
     } catch (error) {
-      console.error(`Failed to download ${type} excel`, error);
-      alert(`Failed to download ${type} file. No data exists yet.`);
+      console.error('Failed to download excel:', error);
+      throw error;
+    }
+  },
+
+  async getDashboardMetrics(dateRange: string = 'all', jobId?: string) {
+    try {
+      const query = new URLSearchParams({ date_range: dateRange });
+      if (jobId) query.append('job_id', jobId);
+      const { data } = await hiringClient.get(`/analytics/dashboard?${query}`);
+      return data;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  },
+
+  async getRoleMetrics(dateRange: string = 'all') {
+    try {
+      const { data } = await hiringClient.get(`/analytics/roles?date_range=${dateRange}`);
+      return data;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  },
+
+  async getTrendData(metric: string, dateRange: string = 'all', jobId?: string) {
+    try {
+      const query = new URLSearchParams({ metric, date_range: dateRange });
+      if (jobId) query.append('job_id', jobId);
+      const { data } = await hiringClient.get(`/analytics/trend?${query}`);
+      return data;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  },
+
+  async exportAnalytics(type: string, format: string, dateRange: string = 'all') {
+    try {
+      const query = new URLSearchParams({ report_type: type, format, date_range: dateRange });
+      const response = await hiringClient.get(`/analytics/export?${query}`, {
+        responseType: 'blob'
+      });
+      const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', `hireonomous_report_${type}.${format === 'excel' ? 'xlsx' : 'csv'}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (e) {
+      console.error(e);
+      throw e;
     }
   },
 

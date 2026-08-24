@@ -94,6 +94,15 @@ const Navbar: React.FC = () => {
               >
                 Hiring
               </Link>
+              <Link
+                to="/analytics"
+                className={`px-5 py-2 text-sm font-semibold rounded-full transition-all duration-300 ${isActive('/analytics')
+                    ? 'bg-white text-blue-600 shadow-sm border border-slate-100'
+                    : 'text-slate-600 hover:text-slate-900'
+                  }`}
+              >
+                Analytics
+              </Link>
             </div>
           )}
 

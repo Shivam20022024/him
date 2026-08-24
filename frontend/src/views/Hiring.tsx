@@ -124,26 +124,19 @@ const Hiring: React.FC = () => {
 
 
 
-  const shortlistedCandidates = useMemo(
-    () => candidates.filter((candidate) => candidate.resume_score >= 70),
-    [candidates]
-  );
+  const callbackRequiredCandidates = useMemo(() => candidates.filter((c) => c.status === 'callback_required'), [candidates]);
   
-  const aiQualifiedCandidates = useMemo(() => candidates.filter(c => 
-    c.status === 'completed' ||
-    c.interest === 'interested' || 
-    c.call_status === 'completed'
+  const pendingCandidates = useMemo(() => candidates.filter(
+    (c) => (!c.status || c.status === 'pending' || c.status === 'uploaded' || c.status === 'new')
   ), [candidates]);
-
-
-
-  const pendingCandidates = useMemo(
-    () =>
-      shortlistedCandidates.filter(
-        (candidate) => !candidate.interest || candidate.interest === 'pending'
-      ),
-    [shortlistedCandidates]
-  );
+  
+  const aiQualifiedCandidates = useMemo(() => candidates.filter(
+    (c) => c.status === 'interested' || c.interest === 'interested' || c.interest === 'interview_scheduled'
+  ), [candidates]);
+  
+  const interviewingCandidates = useMemo(() => candidates.filter(
+    (c) => c.status === 'interview_scheduled' || c.status === 'interview'
+  ), [candidates]);
 
   const handleUploadResume = async (
     files: File[],
@@ -429,7 +422,7 @@ const Hiring: React.FC = () => {
 
     if (result.success) {
       // Create live activity entries for email outreach
-      const newActivities: ActivityItem[] = shortlistedCandidates.map((candidate) => ({
+      const newActivities: ActivityItem[] = aiQualifiedCandidates.map((candidate) => ({
         id: `${Date.now()}-${candidate.id}-mail`,
         candidateName: candidate.name,
         type: 'mail_sent',
@@ -476,25 +469,25 @@ const Hiring: React.FC = () => {
               trendValue: candidates.length > 4 ? `+${candidates.length - 4}` : 'New',
             },
             {
-              title: 'Shortlisted',
-              value: shortlistedCandidates.length,
-              icon: <BriefcaseBusiness className="h-5 w-5" />,
-              subtitle: 'Score 70% and above',
-              trend: shortlistedCandidates.length > 4 ? 'up' : 'neutral',
-            },
-            {
-              title: 'Ready for Outreach',
+              title: 'New',
               value: pendingCandidates.length,
-              icon: <PhoneCall className="h-5 w-5" />,
-              subtitle: 'Awaiting candidate calling',
-              trend: pendingCandidates.length > 0 ? 'up' : 'neutral',
+              icon: <BriefcaseBusiness className="h-5 w-5" />,
+              subtitle: 'Awaiting outreach',
+              trend: 'neutral',
             },
             {
-              title: 'AI Qualified',
+              title: 'Interested',
               value: aiQualifiedCandidates.length,
               icon: <Heart className="h-5 w-5" />,
               subtitle: 'Successfully screened by AI',
               trend: aiQualifiedCandidates.length > 0 ? 'up' : 'neutral',
+            },
+            {
+              title: 'Interviews',
+              value: interviewingCandidates.length,
+              icon: <Calendar className="h-5 w-5" />,
+              subtitle: 'Candidates in interview stage',
+              trend: interviewingCandidates.length > 0 ? 'up' : 'neutral',
             },
           ]}
         />

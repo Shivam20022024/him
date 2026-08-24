@@ -47,21 +47,22 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
     const normalizedStatus = (status || '').toLowerCase();
     const normalizedInterest = (interest || '').toLowerCase();
 
-    if (normalizedStatus === 'calling' || normalizedStatus === 'interviewing' || normalizedStatus === 'ai_call_pending')
+    if (normalizedStatus === 'calling' || normalizedStatus === 'ai_call_pending')
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">
           <div className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />
           Calling
         </span>
       );
-
-    if (normalizedStatus === 'interviewed' || normalizedInterest === 'interviewed' || normalizedStatus === 'completed')
+      
+    if (normalizedStatus === 'callback_required')
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-800">
-          <div className="h-1.5 w-1.5 rounded-full bg-violet-600" />
-          Completed
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+          <div className="h-1.5 w-1.5 rounded-full bg-amber-600" />
+          Callback Required
         </span>
       );
+
     if (normalizedStatus === 'interested' || normalizedInterest === 'interested')
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
@@ -69,6 +70,31 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
           Interested
         </span>
       );
+      
+    if (normalizedStatus === 'interview' || normalizedStatus === 'interview_scheduled')
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-800">
+          <div className="h-1.5 w-1.5 rounded-full bg-purple-600" />
+          Interview
+        </span>
+      );
+      
+    if (normalizedStatus === 'selected')
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-800">
+          <div className="h-1.5 w-1.5 rounded-full bg-indigo-600" />
+          Selected
+        </span>
+      );
+      
+    if (normalizedStatus === 'hired')
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-800">
+          <div className="h-1.5 w-1.5 rounded-full bg-teal-600" />
+          Hired
+        </span>
+      );
+
     if (normalizedStatus === 'not_interested' || normalizedInterest === 'not_interested')
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800">
@@ -76,17 +102,11 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
           Not interested
         </span>
       );
-    if (normalizedStatus === 'shortlisted')
-      return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
-          <div className="h-1.5 w-1.5 rounded-full bg-green-600" />
-          Shortlisted
-        </span>
-      );
+
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
-        <div className="h-1.5 w-1.5 rounded-full bg-amber-600" />
-        Pending
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
+        <div className="h-1.5 w-1.5 rounded-full bg-slate-600" />
+        New
       </span>
     );
   };

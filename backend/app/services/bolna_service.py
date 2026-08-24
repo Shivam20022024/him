@@ -77,7 +77,7 @@ class BolnaService:
             "technical_score": 80, (0-100)
             "confidence_score": 90, (0-100)
             "match_score": 82, (0-100)
-            "interest": "interested", ("interested" or "not_interested")
+            "interest": "interested", (strictly "interested", "not_interested", or "callback_required". Use "callback_required" if they are temporarily unavailable or busy and ask to be called later. Use "not_interested" ONLY for explicit rejection.)
             "final_recommendation": "Strong candidate, recommended for next round.",
             "total_experience": "3 years",
             "relevant_experience": "2 years",
@@ -299,8 +299,10 @@ class BolnaService:
                 elif any(word in val_lower for word in ["yes", "confirmed", "available", "agree"]):
                     update_doc["interest"] = "interested"
                     update_doc["status"] = "interested"
-                elif "not interested" in val_lower or "don't want" in val_lower or "not looking" in val_lower:
-                    # ONLY explicitly reject if they actually say they are not interested
+                elif "callback" in val_lower or "later" in val_lower or "busy" in val_lower or "call" in val_lower:
+                    update_doc["interest"] = "callback_required"
+                    update_doc["status"] = "callback_required"
+                else:
                     update_doc["interest"] = "not_interested"
                     update_doc["status"] = "not_interested"
             

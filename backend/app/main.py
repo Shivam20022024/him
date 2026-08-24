@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes import resume_routes, voice_routes, demo_voice_routes, simulation_routes, email_routes, job_board_routes, bolna_routes, auth_routes, superadmin_routes
+from app.api.routes import resume_routes, voice_routes, demo_voice_routes, simulation_routes, email_routes, job_board_routes, bolna_routes, auth_routes, superadmin_routes, analytics_routes
 from app.core.database import connect_to_mongo, close_mongo_connection
 from app.core.config import settings
 
@@ -41,6 +41,7 @@ app.include_router(bolna_routes.router, tags=["Bolna Integration"])
 # app.include_router(simulation_routes.router, tags=["System Simulation"])
 app.include_router(email_routes.router, tags=["Email Interaction"])
 app.include_router(job_board_routes.router, tags=["Job Board Interaction"])
+app.include_router(analytics_routes.router, prefix="/api/analytics", tags=["Analytics"])
 
 
 @app.get("/")

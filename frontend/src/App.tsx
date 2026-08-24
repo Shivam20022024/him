@@ -8,6 +8,7 @@ import Home from "./views/Home";
 
 import Hiring from "./views/Hiring";
 import Jobs from "./views/Jobs";
+import Analytics from "./views/Analytics";
 import Login from "./views/auth/Login";
 import ForgotPassword from "./views/auth/ForgotPassword";
 import ResetPassword from "./views/auth/ResetPassword";
@@ -49,6 +50,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Hiring />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/analytics" 
+            element={
+              <ProtectedRoute>
+                <Analytics />
               </ProtectedRoute>
             } 
           />
