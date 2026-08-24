@@ -61,8 +61,12 @@ const PremiumResultsSection: React.FC<PremiumResultsSectionProps> = ({
             {c.name.charAt(0)}
           </div>
           <div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight">{c.name}</h3>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{c.role || "Candidate"}</p>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight mb-1">{c.name}</h3>
+            {c.role && (
+              <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                {c.role}
+              </span>
+            )}
           </div>
         </div>
 

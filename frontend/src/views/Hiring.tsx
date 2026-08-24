@@ -469,7 +469,25 @@ const Hiring: React.FC = () => {
       <div className="mx-auto max-w-7xl space-y-5">
         {notification && <NotificationBanner tone={notification.tone} message={notification.message} />}
 
-        <DashboardHeader selectedDate={selectedDate} onDateChange={setSelectedDate} />
+        <DashboardHeader 
+          selectedDate={selectedDate} 
+          onDateChange={setSelectedDate} 
+          currentJob={currentJob}
+          onDeleteJob={currentJob ? async () => {
+            if (!window.confirm(`Delete "${currentJob.title}"? This cannot be undone.`)) return;
+            try {
+              const result = await hiringApi.deleteJob(currentJob.id);
+              if (result.success) {
+                setNotification({ tone: 'success', message: 'Job deleted successfully.' });
+                navigate('/jobs');
+              } else {
+                setNotification({ tone: 'warning', message: result.message || 'Failed to delete job.' });
+              }
+            } catch (e: any) {
+              setNotification({ tone: 'warning', message: e.message || 'Failed to delete job.' });
+            }
+          } : undefined}
+        />
 
         <EnhancedStatsCards
           stats={[
@@ -513,6 +531,7 @@ const Hiring: React.FC = () => {
           onViewResults={scrollToResults}
           onDownloadCandidates={() => hiringApi.downloadExcel('candidates', selectedDate, activeJobId)}
           onDownloadCalls={() => hiringApi.downloadExcel('calls', selectedDate)}
+          isGlobal={!activeJobId}
         />
 
         {showAddCandidate && (

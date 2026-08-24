@@ -9,6 +9,7 @@ interface QuickActionsBarProps {
   onViewResults?: () => void;
   onDownloadCandidates?: () => void;
   onDownloadCalls?: () => void;
+  isGlobal?: boolean;
 }
 
 const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
@@ -19,6 +20,7 @@ const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
   onViewResults,
   onDownloadCandidates,
   onDownloadCalls,
+  isGlobal = false,
 }) => {
   return (
     <div className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
@@ -45,8 +47,11 @@ const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
           <button
             type="button"
             onClick={onStartOutreach}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95"
-            title="Call only candidates with AI score >= 70"
+            disabled={isGlobal}
+            className={`inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold transition active:scale-95 ${
+              isGlobal ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'
+            }`}
+            title={isGlobal ? "Select a specific job to start calling" : "Call only candidates with AI score >= 70"}
           >
             <PhoneCall className="h-4 w-4" />
             Call Shortlisted
@@ -55,8 +60,11 @@ const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
           <button
             type="button"
             onClick={onStartOutreachAll}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95"
-            title="Call all candidates in the pipeline"
+            disabled={isGlobal}
+            className={`inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold transition active:scale-95 ${
+              isGlobal ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'
+            }`}
+            title={isGlobal ? "Select a specific job to start calling" : "Call all candidates in the pipeline"}
           >
             <UsersRound className="h-4 w-4" />
             Call All
@@ -71,14 +79,20 @@ const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
             View Results
           </button>
           
-          <button
-            type="button"
-            onClick={onSendEmails}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95"
-          >
-            <Mail className="h-4 w-4" />
-            Send Emails
-          </button>
+          {onSendEmails && (
+            <button
+              type="button"
+              onClick={onSendEmails}
+              disabled={isGlobal}
+              className={`inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold transition active:scale-95 ${
+                isGlobal ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-700 hover:bg-slate-50'
+              }`}
+              title={isGlobal ? "Select a specific job to send emails" : "Send follow-up emails to shortlisted"}
+            >
+              <Mail className="h-4 w-4" />
+              Send Emails
+            </button>
+          )}
           
           {onDownloadCandidates && (
             <button
