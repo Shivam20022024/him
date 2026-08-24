@@ -348,10 +348,10 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 text-xs text-slate-600">
+      <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800">
         <span>
-          Showing <span className="font-semibold text-slate-900">{filteredAndSorted.length}</span> of{' '}
-          <span className="font-semibold text-slate-900">{candidates.length}</span> candidates
+          Showing <span className="font-bold text-slate-900">{filteredAndSorted.length}</span> of{' '}
+          <span className="font-bold text-slate-900">{candidates.length}</span> candidates
         </span>
       </div>
     </div>
