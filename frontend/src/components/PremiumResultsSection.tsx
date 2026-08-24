@@ -10,9 +10,12 @@ import {
   BrainCircuit,
   BarChart3,
   Phone,
-  ShieldCheck
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Candidate } from '../types';
+import { useState } from 'react';
 
 interface PremiumResultsSectionProps {
   candidates: Candidate[];
@@ -25,6 +28,8 @@ const PremiumResultsSection: React.FC<PremiumResultsSectionProps> = ({
   isLoading = false,
   onViewResult,
 }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -197,32 +202,42 @@ const PremiumResultsSection: React.FC<PremiumResultsSectionProps> = ({
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
+      <div 
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2 cursor-pointer select-none"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 border border-slate-200">
             <BarChart3 size={12} />
             AI Pipeline Results
           </div>
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Interested Candidates</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Interested Candidates</h2>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
+              {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </div>
+          </div>
           <p className="text-slate-500 font-medium">Reviewing high-confidence matches identified by AI screening.</p>
         </div>
       </div>
 
-      <div className="grid gap-6">
-        {candidates.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-slate-200 rounded-[32px] bg-slate-50/50">
-            <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-6 text-slate-300">
-              <BrainCircuit size={32} />
+      {isExpanded && (
+        <div className="grid gap-6">
+          {candidates.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-slate-200 rounded-[32px] bg-slate-50/50">
+              <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-6 text-slate-300">
+                <BrainCircuit size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">No results yet</h3>
+              <p className="text-slate-500 max-w-md mx-auto">
+                Once candidates are screened and confirm interest, they will appear here with detailed AI insights.
+              </p>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">No results yet</h3>
-            <p className="text-slate-500 max-w-md mx-auto">
-              Once candidates are screened and confirm interest, they will appear here with detailed AI insights.
-            </p>
-          </div>
-        ) : (
-          candidates.map((candidate, idx) => renderCandidateCard(candidate, idx))
-        )}
-      </div>
+          ) : (
+            candidates.map((candidate, idx) => renderCandidateCard(candidate, idx))
+          )}
+        </div>
+      )}
     </div>
   );
 };
