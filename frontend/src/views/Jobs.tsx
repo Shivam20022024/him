@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Briefcase, Plus, Calendar, ChevronRight, Loader2, MapPin, Clock, Award } from 'lucide-react';
+import { Briefcase, Plus, Calendar, ChevronRight, Loader2, MapPin, Clock, Award, Trash2 } from 'lucide-react';
 import { Job } from '../types';
 import { hiringApi } from '../services/hiringApi';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
     jobType: 'Full-time'
   });
   const [creating, setCreating] = useState(false);
+  const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
 
   useEffect(() => {
     loadJobs();
@@ -55,6 +56,28 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
     navigate(`/hiring?jobId=${jobId}`);
   };
 
+  const handleDeleteJob = async (job: Job, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm(`Delete "${job.title}"? This cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingJobId(job.id);
+    try {
+      const result = await hiringApi.deleteJob(job.id);
+      if (result.success) {
+        setJobs(prev => prev.filter(j => j.id !== job.id));
+      } else {
+        alert(result.message || 'Failed to delete job.');
+      }
+    } catch (error) {
+      console.error('Failed to delete job', error);
+      alert('Failed to delete job.');
+    } finally {
+      setDeletingJobId(null);
+    }
+  };
+
   const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newJob.title || !newJob.description) return;
@@ -84,8 +107,8 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
       <div className="mx-auto max-w-7xl space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Jobs Board</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Jobs Board</h1>
+            <p className="mt-1 text-base font-semibold text-slate-800">
               Start by creating a job to automatically find the best candidates using AI.
             </p>
           </div>
@@ -224,6 +247,18 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                     <h3 className="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-700 transition-colors">
                       {job.title}
                     </h3>
+                    <button
+                      onClick={(e) => handleDeleteJob(job, e)}
+                      disabled={deletingJobId === job.id}
+                      title="Delete job"
+                      className="shrink-0 rounded-lg p-1.5 text-slate-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 disabled:opacity-50"
+                    >
+                      {deletingJobId === job.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </button>
                   </div>
                   
                   <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium text-slate-500">
