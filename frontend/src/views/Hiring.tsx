@@ -652,6 +652,7 @@ const Hiring: React.FC = () => {
             Connected to live candidate data
           </p>
         </div>
+        </div>
       </div>
     </div>
   );
