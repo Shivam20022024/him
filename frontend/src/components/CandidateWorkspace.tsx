@@ -329,9 +329,6 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidate, onCl
                   <button onClick={() => onCallCandidate?.(candidate)} className="w-full text-left rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200 shadow-sm flex items-center gap-2">
                     <Phone size={16} className="text-blue-600" /> AI Screen Candidate
                   </button>
-                  <button className="w-full text-left rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200 shadow-sm flex items-center gap-2">
-                    <Mail size={16} className="text-slate-400" /> Email Candidate
-                  </button>
                 </div>
               </div>
 
