@@ -190,19 +190,19 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
             <table className="w-full">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
                     Name
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
                     Email
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
                     Score
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
                     Action
                   </th>
                 </tr>
@@ -348,7 +348,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800">
+      <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 text-base font-bold text-slate-900">
         <span>
           Showing <span className="font-bold text-slate-900">{filteredAndSorted.length}</span> of{' '}
           <span className="font-bold text-slate-900">{candidates.length}</span> candidates
