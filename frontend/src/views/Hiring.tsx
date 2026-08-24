@@ -180,18 +180,28 @@ const Hiring: React.FC = () => {
     [candidates]
   );
 
-  const callbackRequiredCandidates = useMemo(() => candidates.filter((c) => c.status === 'callback_required'), [candidates]);
+  const callbackRequiredCandidates = useMemo(() => candidates.filter((c) => (c.status || '').toLowerCase() === 'callback_required'), [candidates]);
   
   const pendingCandidates = useMemo(() => candidates.filter(
-    (c) => (!c.status || c.status === 'pending' || c.status === 'uploaded' || c.status === 'new')
+    (c) => {
+      const s = (c.status || '').toLowerCase();
+      return !s || s === 'pending' || s === 'uploaded' || s === 'new';
+    }
   ), [candidates]);
   
   const aiQualifiedCandidates = useMemo(() => candidates.filter(
-    (c) => c.status === 'interested' || c.interest === 'interested' || c.interest === 'interview_scheduled'
+    (c) => {
+      const s = (c.status || '').toLowerCase();
+      const i = (c.interest || '').toLowerCase();
+      return s === 'interested' || i === 'interested' || s === 'interview_scheduled' || i === 'interview_scheduled' || s === 'interview' || s === 'selected' || s === 'hired';
+    }
   ), [candidates]);
   
   const interviewingCandidates = useMemo(() => candidates.filter(
-    (c) => c.status === 'interview_scheduled' || c.status === 'interview'
+    (c) => {
+      const s = (c.status || '').toLowerCase();
+      return s === 'interview_scheduled' || s === 'interview';
+    }
   ), [candidates]);
 
   const handleUploadResume = async (
