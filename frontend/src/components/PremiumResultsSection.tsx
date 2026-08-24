@@ -143,35 +143,55 @@ const PremiumResultsSection: React.FC<PremiumResultsSectionProps> = ({
               <div className="space-y-4">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Verified Skills</span>
                 <div className="flex flex-wrap gap-2">
-                  {screeningSkillsArray.length > 0 ? (
-                    screeningSkillsArray.map((s: string) => (
-                      <span key={s} className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-100 shadow-sm">
-                        {s}
-                      </span>
-                    ))
-                  ) : (c.skills || []).length > 0 ? (
-                    c.skills.map((s: string) => (
-                      <span key={s} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-[11px] font-bold border border-slate-200 shadow-sm">
-                        {s}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-slate-400 italic font-medium">None identified</span>
-                  )}
+                  {(() => {
+                    const skills = screeningSkillsArray.length > 0 ? screeningSkillsArray : (c.skills || []);
+                    if (skills.length === 0) {
+                      return <span className="text-xs text-slate-400 italic font-medium">None identified</span>;
+                    }
+                    const visibleSkills = skills.slice(0, 5);
+                    const remainingCount = skills.length - 5;
+                    return (
+                      <>
+                        {visibleSkills.map((s: string) => (
+                          <span key={s} className={`px-2 py-1 rounded-lg text-[10px] font-bold border shadow-sm ${screeningSkillsArray.length > 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                            {s}
+                          </span>
+                        ))}
+                        {remainingCount > 0 && (
+                          <span className="px-2 py-1 rounded-lg bg-slate-50 text-slate-500 text-[10px] font-bold border border-slate-100 shadow-sm">
+                            +{remainingCount} more
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
               <div className="space-y-4">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Missing Skills</span>
                 <div className="flex flex-wrap gap-2">
-                  {(c.missing_skills || []).length > 0 ? (
-                    c.missing_skills.map((s: string) => (
-                      <span key={s} className="px-3 py-1.5 rounded-xl bg-red-50 text-red-600 text-[11px] font-bold border border-red-100 shadow-sm">
-                        {s}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-slate-400 italic font-medium">None identified</span>
-                  )}
+                  {(() => {
+                    const missing = c.missing_skills || [];
+                    if (missing.length === 0) {
+                      return <span className="text-xs text-slate-400 italic font-medium">None identified</span>;
+                    }
+                    const visibleMissing = missing.slice(0, 5);
+                    const remainingMissingCount = missing.length - 5;
+                    return (
+                      <>
+                        {visibleMissing.map((s: string) => (
+                          <span key={s} className="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 shadow-sm">
+                            {s}
+                          </span>
+                        ))}
+                        {remainingMissingCount > 0 && (
+                          <span className="px-2 py-1 rounded-lg bg-slate-50 text-slate-500 text-[10px] font-bold border border-slate-100 shadow-sm">
+                            +{remainingMissingCount} more
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
