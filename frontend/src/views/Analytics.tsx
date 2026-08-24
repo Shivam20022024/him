@@ -99,7 +99,6 @@ const Analytics: React.FC = () => {
                 <button onClick={() => handleExport('roles', 'csv')} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Role-Wise Report</button>
                 <div className="border-t border-slate-100 my-1"></div>
                 <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Download Excel</div>
-                <button onClick={() => handleExport('monthly', 'excel')} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Monthly Report</button>
                 <button onClick={() => handleExport('roles', 'excel')} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Role-Wise Report</button>
               </div>
             </div>
