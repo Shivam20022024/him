@@ -132,18 +132,7 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidate, onCl
 
               {/* Action Bar */}
               <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
-                <button 
-                  onClick={() => onStatusChange?.('interview')}
-                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800 transition-colors"
-                >
-                  Move to Interview
-                </button>
-                <button 
-                  onClick={() => onStatusChange?.('interview_scheduled')}
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
-                >
-                  Schedule Interview
-                </button>
+
                 <button 
                   onClick={() => onStatusChange?.('rejected')}
                   className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 hover:border-red-100 transition-colors"
