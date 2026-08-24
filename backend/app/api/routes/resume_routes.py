@@ -179,19 +179,16 @@ async def upload_resume(
         phone = result.get("phone", "")
         
         if not phone or str(phone).strip().lower() in ["", "n/a", "none", "null"]:
-            logger.warning(f"[{request_id}] Rejected resume {file.filename} - No phone number found.")
-            try:
-                if os.path.exists(file_path): os.remove(file_path)
-                if jd_file_path and os.path.exists(jd_file_path): os.remove(jd_file_path)
-            except Exception:
-                pass
-            raise HTTPException(status_code=400, detail="Could not detect a phone number. Please ensure the resume contains a valid phone number.")
-
-        # If we hit a fallback (50.0) due to processing failure, mark as pending for human review
-        if score == 50.0 and ("failure" in result.get("reason", "").lower() or "error" in result.get("reason", "").lower()):
-            status = "pending"
+            logger.warning(f"[{request_id}] No phone number found for {file.filename}. Adding as rejected.")
+            status = "rejected"
+            result["reason"] = "Rejected: Could not detect a valid phone number."
+            score = 0.0 # Force a low score
         else:
-            status = "shortlisted" if score >= settings.SHORTLIST_THRESHOLD else "rejected"
+            # If we hit a fallback (50.0) due to processing failure, mark as pending for human review
+            if score == 50.0 and ("failure" in result.get("reason", "").lower() or "error" in result.get("reason", "").lower()):
+                status = "pending"
+            else:
+                status = "shortlisted" if score >= settings.SHORTLIST_THRESHOLD else "rejected"
 
         candidate_data = {
             "id": str(uuid.uuid4()),
