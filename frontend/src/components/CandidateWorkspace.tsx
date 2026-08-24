@@ -80,12 +80,7 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidate, onCl
             >
               Move Stage
             </button>
-            <button 
-              onClick={() => onCallCandidate?.(candidate)}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20"
-            >
-              Call Candidate
-            </button>
+
           </div>
         </div>
 
