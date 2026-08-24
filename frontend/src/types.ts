@@ -198,6 +198,15 @@ export interface Candidate {
 
 
 
+export interface GroupedCandidate {
+  id: string; // Used email or phone as the unique identifier
+  name: string;
+  email?: string;
+  phone?: string;
+  totalExperience?: string;
+  applications: Candidate[];
+}
+
 export interface ResumeAnalysisResponse {
   candidate_id: string;
   name: string;

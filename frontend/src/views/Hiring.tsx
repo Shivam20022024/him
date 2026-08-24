@@ -6,11 +6,11 @@ import QuickActionsBar from '../components/QuickActionsBar';
 import EnhancedStatsCards from '../components/EnhancedStatsCards';
 import PipelineTable from '../components/PipelineTable';
 import NotificationBanner from '../components/hiring/NotificationBanner';
-import { Candidate, Job } from '../types';
+import { Candidate, Job, GroupedCandidate } from '../types';
 
 import { hiringApi } from '../services/hiringApi';
 import InterviewModal from '../components/hiring/InterviewModal';
-import PremiumResultsSection from '../components/PremiumResultsSection';
+import CandidateWorkspace from '../components/CandidateWorkspace';
 
 
 // Demo candidates removed per requirement
@@ -35,7 +35,7 @@ const Hiring: React.FC = () => {
   const [showAddCandidate, setShowAddCandidate] = useState(false);
   const [currentJob, setCurrentJob] = useState<Job | null>(null);
   const [selectedForInterview, setSelectedForInterview] = useState<Candidate | null>(null);
-  const [viewingResult, setViewingResult] = useState<Candidate | null>(null);
+  const [viewingResult, setViewingResult] = useState<GroupedCandidate | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -119,6 +119,37 @@ const Hiring: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [candidates.length, candidates.some(c => c.status === 'ai_call_pending' || c.status === 'calling')]);
+
+  // GROUPING LOGIC
+  const groupedCandidates = useMemo<GroupedCandidate[]>(() => {
+    const groups = new Map<string, GroupedCandidate>();
+    
+    candidates.forEach(c => {
+      // Use email, then phone, then name as fallback for grouping
+      const key = (c.email || c.phone || c.name).toLowerCase().trim();
+      
+      if (!groups.has(key)) {
+        groups.set(key, {
+          id: key,
+          name: c.name,
+          email: c.email,
+          phone: c.phone,
+          // Extract experience from first application, ideally they match
+          totalExperience: c.screening_skills || '', 
+          applications: []
+        });
+      }
+      
+      const group = groups.get(key)!;
+      group.applications.push(c);
+      
+      // Update general info if missing
+      if (!group.email && c.email) group.email = c.email;
+      if (!group.phone && c.phone) group.phone = c.phone;
+    });
+    
+    return Array.from(groups.values());
+  }, [candidates]);
 
   const shortlistedCandidates = useMemo(
     () => candidates.filter((candidate) => candidate.resume_score >= 70 || candidate.screening_score >= 70),
@@ -493,11 +524,18 @@ const Hiring: React.FC = () => {
           stats={[
             {
               title: 'Total Candidates',
-              value: candidates.length,
+              value: groupedCandidates.length,
               icon: <Users className="h-5 w-5" />,
-              subtitle: 'All profiles in the pipeline',
-              trend: candidates.length > 4 ? 'up' : 'neutral',
-              trendValue: candidates.length > 4 ? `+${candidates.length - 4}` : 'New',
+              subtitle: 'Unique people in pipeline',
+              trend: groupedCandidates.length > 0 ? 'up' : 'neutral',
+              trendValue: 'New',
+            },
+            {
+              title: 'Total Applications',
+              value: candidates.length,
+              icon: <BriefcaseBusiness className="h-5 w-5" />,
+              subtitle: 'Total database rows',
+              trend: candidates.length > 0 ? 'up' : 'neutral',
             },
             {
               title: 'Shortlisted',
@@ -593,7 +631,7 @@ const Hiring: React.FC = () => {
                 <div className="h-full">
                   {loading ? (
                     <PipelineTable
-                      candidates={[]}
+                      groupedCandidates={[]}
                       isLoading={true}
                     />
                   ) : candidates.length === 0 ? (
@@ -614,9 +652,10 @@ const Hiring: React.FC = () => {
                     </div>
                   ) : (
                     <PipelineTable
-                      candidates={candidates}
+                      groupedCandidates={groupedCandidates}
                       onCallCandidate={handleCallCandidate}
                       onDeleteCandidate={handleDeleteCandidate}
+                      onViewCandidate={setViewingResult}
                       isLoading={false}
                     />
                   )}
@@ -650,23 +689,18 @@ const Hiring: React.FC = () => {
         )}
 
         {viewingResult && (
-          <InterviewModal
-            candidate={viewingResult}
-            mode="result"
+          <CandidateWorkspace
+            candidateGroup={viewingResult}
             onClose={() => setViewingResult(null)}
+            onStatusChange={(candidateId, status, interest) => {
+              updateCandidateStatus(candidateId, status, interest);
+              loadCandidates(true); // refresh silently
+            }}
+            onCallCandidate={(c) => {
+              handleCallCandidate(c);
+            }}
           />
         )}
-
-        <div ref={resultsRef} className="mt-6">
-          <PremiumResultsSection 
-            candidates={aiQualifiedCandidates} 
-            isLoading={loading} 
-            onViewResult={setViewingResult}
-            onStatusChange={updateCandidateStatus}
-            onCallCandidate={handleCallCandidate}
-          />
-        </div>
-
 
         </div>
       </div>

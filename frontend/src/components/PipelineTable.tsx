@@ -1,22 +1,24 @@
 import React, { useState, useMemo } from 'react';
-import { Search, PhoneCall, Trash2, Clock, CheckCircle2, ChevronDown, ChevronRight, FileText } from 'lucide-react';
-import { Candidate } from '../types';
+import { Search, PhoneCall, Trash2, Clock, CheckCircle2, ChevronDown, ChevronRight, FileText, Briefcase } from 'lucide-react';
+import { Candidate, GroupedCandidate } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 interface PipelineTableProps {
-  candidates: Candidate[];
+  groupedCandidates: GroupedCandidate[];
   onCallCandidate?: (candidate: Candidate) => void;
   onDeleteCandidate?: (candidate: Candidate) => void;
+  onViewCandidate?: (group: GroupedCandidate) => void;
   isLoading?: boolean;
 }
 
 const PipelineTable: React.FC<PipelineTableProps> = ({
-  candidates,
+  groupedCandidates,
   onCallCandidate,
   onDeleteCandidate,
+  onViewCandidate,
   isLoading = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'score' | 'name' | 'date'>('score');
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
   const toggleRow = (id: string, e: React.MouseEvent) => {
@@ -25,30 +27,14 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
     setExpandedRowId(expandedRowId === id ? null : id);
   };
 
-  const filteredAndSorted = useMemo(() => {
-    let filtered = candidates.filter(
+  const filteredCandidates = useMemo(() => {
+    return groupedCandidates.filter(
       (c) =>
         c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        c.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.phone?.includes(searchQuery)
     );
-
-    filtered.sort((a, b) => {
-      if (sortBy === 'score') {
-        const scoreA = a.screening_score !== undefined ? a.screening_score : a.resume_score;
-        const scoreB = b.screening_score !== undefined ? b.screening_score : b.resume_score;
-        return scoreB - scoreA;
-      }
-      if (sortBy === 'name') return a.name.localeCompare(b.name);
-      if (sortBy === 'date') {
-        const dateA = new Date(a.created_at || 0).getTime();
-        const dateB = new Date(b.created_at || 0).getTime();
-        return dateB - dateA;
-      }
-      return 0;
-    });
-
-    return filtered;
-  }, [candidates, searchQuery, sortBy]);
+  }, [groupedCandidates, searchQuery]);
 
   const getStatusBadge = (status?: string, interest?: string) => {
     const normalizedStatus = (status || '').toLowerCase();
@@ -101,258 +87,204 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
           Hired
         </span>
       );
-
-    if (normalizedStatus === 'not_interested' || normalizedInterest === 'not_interested')
+      
+    if (normalizedStatus === 'not_interested' || normalizedInterest === 'not_interested' || normalizedStatus === 'rejected')
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800">
           <div className="h-1.5 w-1.5 rounded-full bg-red-600" />
-          Not interested
+          {normalizedStatus === 'rejected' ? 'Rejected' : 'Not Interested'}
         </span>
       );
-
-    if (normalizedStatus === 'completed')
+      
+    if (normalizedStatus === 'not_assessed' || (!normalizedStatus && !normalizedInterest))
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
-          <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-          Call Completed
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+          Not Assessed
         </span>
       );
 
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
-        <div className="h-1.5 w-1.5 rounded-full bg-slate-600" />
-        New
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800 capitalize">
+        <div className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+        {normalizedStatus.replace('_', ' ') || 'New'}
       </span>
     );
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-green-600 bg-green-50';
-    if (score >= 70) return 'text-blue-600 bg-blue-50';
-    return 'text-slate-600 bg-slate-50';
+  const getAiScore = (candidate: Candidate) => {
+    if (candidate.status === 'not_assessed' || (!candidate.resume_score && !candidate.screening_score)) {
+      return <span className="text-slate-400 text-xs font-semibold">—</span>;
+    }
+    const score = candidate.screening_score || candidate.resume_score || 0;
+    const color = score >= 80 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 
+                 score >= 60 ? 'text-amber-600 bg-amber-50 border-amber-200' : 
+                 'text-red-600 bg-red-50 border-red-200';
+    return (
+      <span className={`inline-flex items-center justify-center h-7 px-2 rounded font-black text-sm border ${color}`}>
+        {score}%
+      </span>
+    );
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className="h-12 rounded-lg bg-slate-100 animate-pulse"
-          />
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-5">
-      {/* Search and Sort Bar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+    <div className="flex h-full flex-col">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="text"
-            placeholder="Search by name or email..."
+            placeholder="Search candidates by name, email..."
+            className="w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-400/20"
           />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'score' | 'name' | 'date')}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 cursor-pointer"
-          >
-            <option value="score">Sort by Score</option>
-            <option value="name">Sort by Name</option>
-            <option value="date">Sort by Date</option>
-          </select>
         </div>
       </div>
 
-      {/* Table */}
-      {filteredAndSorted.length === 0 ? (
-        <div className="rounded-[24px] border border-slate-100 bg-white px-6 py-8 text-center shadow-sm">
-          <div className="mx-auto mb-4 inline-flex rounded-full bg-slate-50 p-3 text-slate-400">
-            <Search className="h-6 w-6" />
-          </div>
-          <p className="text-sm font-medium text-slate-600">No candidates found</p>
-          <p className="mt-1 text-xs text-slate-500">
-            Try adjusting your search criteria
-          </p>
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b border-slate-200 bg-slate-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
-                    Name
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
-                    Email
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
-                    Score
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider text-slate-800">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {filteredAndSorted.map((candidate) => {
-                  const s = (candidate.status || '').toLowerCase();
-                  const blocklist = ['calling', 'ai_call_pending', 'completed', 'interested', 'not_interested', 'interview', 'interview_scheduled', 'selected', 'hired'];
-                  const disabled = blocklist.includes(s) || candidate.interest === 'interested' || candidate.interest === 'not_interested';
+      <div className="flex-1 overflow-auto rounded-[20px] border border-slate-200 bg-white">
+        <table className="w-full text-left text-sm whitespace-nowrap">
+          <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+              <th className="w-8 px-4 py-4"></th>
+              <th className="px-6 py-4 font-bold">Candidate</th>
+              <th className="px-6 py-4 font-bold">Applications</th>
+              <th className="px-6 py-4 font-bold">Experience</th>
+              <th className="px-6 py-4 font-bold">Latest Status</th>
+              <th className="px-6 py-4 font-bold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">
+                  <div className="flex justify-center items-center gap-3">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+                    Loading candidates...
+                  </div>
+                </td>
+              </tr>
+            ) : filteredCandidates.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">
+                  No candidates found matching your criteria.
+                </td>
+              </tr>
+            ) : (
+              filteredCandidates.map((group) => {
+                const isExpanded = expandedRowId === group.id;
+                const latestApp = group.applications[0]; // Assuming sorted by latest
 
-
-                  return (
-                    <React.Fragment key={candidate.id}>
-                      <tr
-                        onClick={(e) => toggleRow(candidate.id, e)}
-                        className={`transition-colors duration-200 hover:bg-slate-50 cursor-pointer ${expandedRowId === candidate.id ? 'bg-slate-50 border-b-0' : ''}`}
-                      >
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-3">
-                            <div className="text-slate-400">
-                              {expandedRowId === candidate.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                return (
+                  <React.Fragment key={group.id}>
+                    <tr 
+                      className={`group transition-colors hover:bg-slate-50 cursor-pointer ${isExpanded ? 'bg-slate-50/50' : ''}`}
+                      onClick={(e) => toggleRow(group.id, e)}
+                    >
+                      <td className="px-4 py-4 text-slate-400">
+                        {group.applications.length > 1 ? (
+                          isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />
+                        ) : null}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 font-bold shadow-inner">
+                            {group.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-900">{group.name}</div>
+                            <div className="text-xs text-slate-500">{group.email || group.phone || 'No contact info'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {group.applications.length === 1 ? (
+                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 text-xs font-semibold text-slate-700">
+                            <Briefcase size={12} className="text-slate-500" />
+                            {latestApp.role || 'General'}
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 text-xs font-semibold text-blue-700 border border-blue-100">
+                            {group.applications.length} Applications
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-slate-600 font-medium">
+                        {group.totalExperience || 'Not Available'}
+                      </td>
+                      <td className="px-6 py-4">
+                        {getStatusBadge(latestApp.status, latestApp.interest)}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                           {group.applications.length === 1 && (
+                             <button
+                               onClick={() => onCallCandidate?.(latestApp)}
+                               className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
+                               title="Call Candidate"
+                             >
+                               <PhoneCall size={18} />
+                             </button>
+                           )}
+                           <button
+                             onClick={() => onViewCandidate?.(group)}
+                             className="rounded-lg px-3 py-1.5 text-xs font-bold text-white bg-slate-900 transition hover:bg-slate-800"
+                           >
+                             View Profile
+                           </button>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    {/* EXPANDED APPLICATIONS */}
+                    {isExpanded && group.applications.length > 1 && (
+                      <tr>
+                        <td colSpan={6} className="p-0 border-b border-slate-200 bg-slate-50/50">
+                          <div className="px-14 py-4">
+                            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Applications</h4>
+                            <div className="space-y-2">
+                              {group.applications.map((app, idx) => (
+                                <div key={app.id || idx} className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                                  <div className="flex items-center gap-4">
+                                    <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                      <Briefcase size={14} />
+                                    </div>
+                                    <div>
+                                      <div className="font-bold text-slate-900 text-sm">{app.role || 'General Application'}</div>
+                                      <div className="text-xs text-slate-500 font-medium flex items-center gap-2">
+                                        <Clock size={10} /> Applied: {new Date(app.created_at || Date.now()).toLocaleDateString()}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-6">
+                                    <div className="flex flex-col items-end">
+                                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">AI Match</span>
+                                      {getAiScore(app)}
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Status</span>
+                                      {getStatusBadge(app.status, app.interest)}
+                                    </div>
+                                    <button
+                                      onClick={() => onViewCandidate?.({ ...group, applications: [app] })}
+                                      className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-900 border border-slate-200 shadow-sm bg-white"
+                                      title="View Application"
+                                    >
+                                      <ChevronRight size={16} />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            <div className="font-semibold text-slate-900">
-                              {candidate.name}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5">
-                          <div className="text-sm text-slate-600">
-                            {candidate.email || '-'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-5">
-                          <div
-                            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${
-                              (candidate.screening_score ?? candidate.resume_score) != null 
-                                ? getScoreColor(candidate.screening_score ?? candidate.resume_score ?? 0)
-                                : 'text-slate-500 bg-slate-50'
-                            }`}
-                            title={candidate.screening_score !== undefined ? "Post-Call AI Score" : "Initial Resume Score"}
-                          >
-                            {(candidate.screening_score ?? candidate.resume_score) != null
-                              ? `${candidate.screening_score ?? candidate.resume_score}%`
-                              : '-'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-5">
-                          {getStatusBadge(candidate.status, candidate.interest)}
-                        </td>
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => onCallCandidate?.(candidate)}
-                              disabled={disabled}
-                              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-semibold transition duration-200 ${
-                                disabled
-                                  ? 'cursor-not-allowed bg-slate-100 text-slate-400'
-                                  : 'bg-blue-600 text-white hover:bg-blue-700'
-                              }`}
-                            >
-                              <PhoneCall className="h-3.5 w-3.5" />
-                              Call
-                            </button>
-                            
-                            {onDeleteCandidate && (
-                              <button
-                                onClick={() => onDeleteCandidate(candidate)}
-                                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
-                                title="Remove Candidate"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            )}
                           </div>
                         </td>
                       </tr>
-                      {expandedRowId === candidate.id && (
-                        <tr className="bg-slate-50/50 border-t-0">
-                          <td colSpan={5} className="px-6 py-6 border-b border-slate-200">
-                            <div className="pl-7 grid md:grid-cols-2 gap-8">
-                              <div className="space-y-4">
-                                <div>
-                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Contact & Role</span>
-                                  <div className="text-sm text-slate-700 space-y-1">
-                                    <p><span className="font-medium text-slate-500">Phone:</span> {candidate.phone || "Not provided"}</p>
-                                    <p><span className="font-medium text-slate-500">Role:</span> <span className="uppercase text-blue-600 font-bold">{candidate.role || "Unassigned"}</span></p>
-                                  </div>
-                                </div>
-                                {candidate.summary && (
-                                  <div>
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Summary</span>
-                                    <p className="text-sm text-slate-600 leading-relaxed bg-white p-3 rounded-xl border border-slate-200">
-                                      {candidate.summary}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="space-y-4">
-                                <div>
-                                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">AI Screening Skills</span>
-                                  <div className="flex flex-wrap gap-2">
-                                    {candidate.screening_skills ? (
-                                      candidate.screening_skills.split(',').map((s: string) => (
-                                        <span key={s.trim()} className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 shadow-sm">
-                                          {s.trim()}
-                                        </span>
-                                      ))
-                                    ) : (candidate.skills || []).length > 0 ? (
-                                      candidate.skills.map((s: string) => (
-                                        <span key={s} className="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200 shadow-sm">
-                                          {s}
-                                        </span>
-                                      ))
-                                    ) : (
-                                      <span className="text-xs text-slate-400 italic">None identified</span>
-                                    )}
-                                  </div>
-                                </div>
-                                {candidate.missing_skills && candidate.missing_skills.length > 0 && (
-                                  <div>
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Missing Skills</span>
-                                    <div className="flex flex-wrap gap-2">
-                                      {candidate.missing_skills.map((s: string) => (
-                                        <span key={s} className="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 shadow-sm">
-                                          {s}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 text-base font-bold text-slate-900">
-        <span>
-          Showing <span className="font-bold text-slate-900">{filteredAndSorted.length}</span> of{' '}
-          <span className="font-bold text-slate-900">{candidates.length}</span> candidates
-        </span>
+                    )}
+                  </React.Fragment>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
