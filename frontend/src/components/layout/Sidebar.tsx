@@ -9,9 +9,9 @@ import {
 
 const Sidebar = () => {
   const navItems = [
-    { label: 'Jobs', path: '/jobs', icon: <Briefcase size={18} /> },
-    { label: 'Hiring', path: '/hiring', icon: <Users size={18} /> },
-    { label: 'Analytics', path: '/analytics', icon: <LineChart size={18} /> },
+    { label: 'Jobs', path: '/jobs', icon: <Briefcase size={22} /> },
+    { label: 'Hiring', path: '/hiring', icon: <Users size={22} /> },
+    { label: 'Analytics', path: '/analytics', icon: <LineChart size={22} /> },
   ];
 
   return (
@@ -24,7 +24,7 @@ const Sidebar = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-black text-slate-900 tracking-tight">Hireonomous</h1>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Hireonomous</h1>
             </div>
           </div>
         </div>
@@ -36,10 +36,10 @@ const Sidebar = () => {
               <NavLink
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all font-bold ${
+                  `flex items-center gap-3 rounded-xl px-4 py-3 text-base transition-all font-black tracking-wide ${
                     isActive
                       ? 'bg-slate-100 text-slate-900'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                      : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
                   }`
                 }
               >
@@ -57,8 +57,8 @@ const Sidebar = () => {
               SH
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-slate-900">Shivam</span>
-              <span className="text-xs font-medium text-slate-500">admin@example.com</span>
+              <span className="text-base font-black text-slate-900 tracking-tight">Shivam</span>
+              <span className="text-sm font-semibold text-slate-700">admin@example.com</span>
             </div>
           </div>
         </div>
