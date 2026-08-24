@@ -194,14 +194,9 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {filteredAndSorted.map((candidate) => {
-                  const disabled =
-                    candidate.status === 'calling' ||
-                    candidate.status === 'completed' ||
-                    candidate.status === 'interviewing' ||
-                    candidate.status === 'interviewed' ||
-                    candidate.status === 'ai_call_pending' ||
-                    candidate.interest === 'interested' ||
-                    candidate.interest === 'not_interested';
+                  const s = (candidate.status || '').toLowerCase();
+                  const blocklist = ['calling', 'ai_call_pending', 'completed', 'interested', 'not_interested', 'interview', 'interview_scheduled', 'selected', 'hired'];
+                  const disabled = blocklist.includes(s) || candidate.interest === 'interested' || candidate.interest === 'not_interested';
 
 
                   return (

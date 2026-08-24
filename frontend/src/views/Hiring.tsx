@@ -119,7 +119,60 @@ const Hiring: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [candidates.length, candidates.some(c => c.status === 'ai_call_pending' || c.status === 'calling')]);
+  // Track candidate status changes for Live Activity panel
+  const prevCandidatesRef = useRef<Candidate[]>([]);
 
+  useEffect(() => {
+    if (prevCandidatesRef.current.length > 0) {
+      const newActivities: ActivityItem[] = [];
+      candidates.forEach(currentCandidate => {
+        const prevCandidate = prevCandidatesRef.current.find(c => c.id === currentCandidate.id);
+        if (prevCandidate && prevCandidate.status !== currentCandidate.status) {
+          const status = currentCandidate.status?.toLowerCase() || '';
+          let type: ActivityItem['type'] = 'response';
+          let message = `Status updated to ${status}`;
+          
+          if (status === 'interested') {
+            type = 'interested';
+            message = 'Candidate is interested!';
+          } else if (status === 'not_interested') {
+            type = 'not_interested';
+            message = 'Candidate is not interested.';
+          } else if (status === 'callback_required') {
+            type = 'response';
+            message = 'Callback required.';
+          } else if (status === 'completed') {
+            type = 'response';
+            message = 'Call completed. Analyzing...';
+          } else if (status === 'interview_scheduled' || status === 'interview') {
+            type = 'interested';
+            message = 'Interview scheduled!';
+          } else if (status === 'selected') {
+            type = 'interested';
+            message = 'Candidate Selected!';
+          } else if (status === 'hired') {
+            type = 'interested';
+            message = 'Candidate Hired!';
+          }
+          
+          if (['interested', 'not_interested', 'callback_required', 'completed', 'interview_scheduled', 'interview', 'selected', 'hired'].includes(status)) {
+            newActivities.push({
+              id: `${Date.now()}-${currentCandidate.id}-${status}`,
+              candidateName: currentCandidate.name,
+              type,
+              message,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        }
+      });
+      
+      if (newActivities.length > 0) {
+        setActivities(prev => [...newActivities, ...prev].slice(0, 15));
+      }
+    }
+    prevCandidatesRef.current = candidates;
+  }, [candidates]);
 
 
   const shortlistedCandidates = useMemo(
@@ -243,9 +296,11 @@ const Hiring: React.FC = () => {
   };
 
   const executeCalling = async (candidatesToCall: Candidate[], isAll: boolean) => {
-    const validCandidates = candidatesToCall.filter(c => 
-      !['calling', 'completed', 'interviewing', 'interviewed'].includes(c.status?.toLowerCase() || '')
-    );
+    const validCandidates = candidatesToCall.filter(c => {
+      const s = c.status?.toLowerCase() || '';
+      const blocklist = ['calling', 'ai_call_pending', 'completed', 'interested', 'not_interested', 'interview', 'interview_scheduled', 'selected', 'hired'];
+      return !blocklist.includes(s) && c.interest !== 'interested' && c.interest !== 'not_interested';
+    });
 
     if (!validCandidates.length) {
       setNotification({
