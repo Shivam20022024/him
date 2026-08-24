@@ -175,8 +175,17 @@ async def upload_resume(
                 "role": "Not Assessed"
             }
             candidate_name = "Candidate"
-        
         score = result.get("score", 50.0)
+        phone = result.get("phone", "")
+        
+        if not phone or str(phone).strip().lower() in ["", "n/a", "none", "null"]:
+            logger.warning(f"[{request_id}] Rejected resume {file.filename} - No phone number found.")
+            try:
+                if os.path.exists(file_path): os.remove(file_path)
+                if jd_file_path and os.path.exists(jd_file_path): os.remove(jd_file_path)
+            except Exception:
+                pass
+            raise HTTPException(status_code=400, detail="Could not detect a phone number. Please ensure the resume contains a valid phone number.")
 
         # If we hit a fallback (50.0) due to processing failure, mark as pending for human review
         if score == 50.0 and ("failure" in result.get("reason", "").lower() or "error" in result.get("reason", "").lower()):
