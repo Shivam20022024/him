@@ -643,6 +643,8 @@ const Hiring: React.FC = () => {
             candidates={aiQualifiedCandidates} 
             isLoading={loading} 
             onViewResult={setViewingResult}
+            onStatusChange={updateCandidateStatus}
+            onCallCandidate={handleCallCandidate}
           />
         </div>
 
