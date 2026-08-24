@@ -41,7 +41,7 @@ app.include_router(bolna_routes.router, tags=["Bolna Integration"])
 # app.include_router(simulation_routes.router, tags=["System Simulation"])
 app.include_router(email_routes.router, tags=["Email Interaction"])
 app.include_router(job_board_routes.router, tags=["Job Board Interaction"])
-app.include_router(analytics_routes.router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(analytics_routes.router, prefix="/analytics", tags=["Analytics"])
 
 
 @app.get("/")

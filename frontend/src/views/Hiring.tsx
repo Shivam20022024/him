@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BriefcaseBusiness, Heart, PhoneCall, Users } from 'lucide-react';
+import { BriefcaseBusiness, Heart, PhoneCall, Users, Calendar } from 'lucide-react';
 import ResumeUpload from '../components/ResumeUpload';
 import DashboardHeader from '../components/DashboardHeader';
 import QuickActionsBar from '../components/QuickActionsBar';
@@ -123,6 +123,10 @@ const Hiring: React.FC = () => {
 
 
 
+  const shortlistedCandidates = useMemo(
+    () => candidates.filter((candidate) => candidate.resume_score >= 70 || candidate.screening_score >= 70),
+    [candidates]
+  );
 
   const callbackRequiredCandidates = useMemo(() => candidates.filter((c) => c.status === 'callback_required'), [candidates]);
   
