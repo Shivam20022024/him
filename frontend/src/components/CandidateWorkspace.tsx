@@ -205,18 +205,10 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidate, onCl
                   <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider">AI Screening Insights</h2>
                 </div>
                 <div className="p-6 flex-1">
-                  <div className="mb-6 grid grid-cols-3 gap-4">
+                  <div className="mb-6 grid grid-cols-1 gap-4">
                     <div className="text-center">
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Overall Match</span>
                       <span className="text-xl font-black text-slate-900">{Math.round(displayScore)}%</span>
-                    </div>
-                    <div className="text-center">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Comm. Skills</span>
-                      <span className="text-xl font-black text-slate-900">{candidate.communication_score ? Math.round(candidate.communication_score) + '/10' : '-'}</span>
-                    </div>
-                    <div className="text-center">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Tech. Score</span>
-                      <span className="text-xl font-black text-slate-900">{candidate.technical_score ? Math.round(candidate.technical_score) + '/10' : '-'}</span>
                     </div>
                   </div>
 
