@@ -198,7 +198,7 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidate, onCl
             )}
 
             {/* Candidate Overview Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Email</span>
                 <span className="text-sm font-semibold text-slate-900 break-all">{candidate.email || 'N/A'}</span>
@@ -210,12 +210,6 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidate, onCl
               <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Status</span>
                 <span className="text-sm font-bold text-slate-900 capitalize px-2 py-0.5 rounded bg-slate-100 inline-block mt-0.5">{candidate.status || 'Uploaded'}</span>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Resume</span>
-                <button className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-0.5">
-                  <FileText size={14} /> View File
-                </button>
               </div>
             </div>
 
