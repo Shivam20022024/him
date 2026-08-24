@@ -5,7 +5,6 @@ import DashboardHeader from '../components/DashboardHeader';
 import QuickActionsBar from '../components/QuickActionsBar';
 import EnhancedStatsCards from '../components/EnhancedStatsCards';
 import PipelineTable from '../components/PipelineTable';
-import LiveActivityPanel, { ActivityItem } from '../components/LiveActivityPanel';
 import NotificationBanner from '../components/hiring/NotificationBanner';
 import { Candidate, Job } from '../types';
 
@@ -119,61 +118,6 @@ const Hiring: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [candidates.length, candidates.some(c => c.status === 'ai_call_pending' || c.status === 'calling')]);
-  // Track candidate status changes for Live Activity panel
-  const prevCandidatesRef = useRef<Candidate[]>([]);
-
-  useEffect(() => {
-    if (prevCandidatesRef.current.length > 0) {
-      const newActivities: ActivityItem[] = [];
-      candidates.forEach(currentCandidate => {
-        const prevCandidate = prevCandidatesRef.current.find(c => c.id === currentCandidate.id);
-        if (prevCandidate && prevCandidate.status !== currentCandidate.status) {
-          const status = currentCandidate.status?.toLowerCase() || '';
-          let type: ActivityItem['type'] = 'response';
-          let message = `Status updated to ${status}`;
-          
-          if (status === 'interested') {
-            type = 'interested';
-            message = 'Candidate is interested!';
-          } else if (status === 'not_interested') {
-            type = 'not_interested';
-            message = 'Candidate is not interested.';
-          } else if (status === 'callback_required') {
-            type = 'response';
-            message = 'Callback required.';
-          } else if (status === 'completed') {
-            type = 'response';
-            message = 'Call completed. Analyzing...';
-          } else if (status === 'interview_scheduled' || status === 'interview') {
-            type = 'interested';
-            message = 'Interview scheduled!';
-          } else if (status === 'selected') {
-            type = 'interested';
-            message = 'Candidate Selected!';
-          } else if (status === 'hired') {
-            type = 'interested';
-            message = 'Candidate Hired!';
-          }
-          
-          if (['interested', 'not_interested', 'callback_required', 'completed', 'interview_scheduled', 'interview', 'selected', 'hired'].includes(status)) {
-            newActivities.push({
-              id: `${Date.now()}-${currentCandidate.id}-${status}`,
-              candidateName: currentCandidate.name,
-              type,
-              message,
-              timestamp: new Date().toISOString(),
-            });
-          }
-        }
-      });
-      
-      if (newActivities.length > 0) {
-        setActivities(prev => [...newActivities, ...prev].slice(0, 15));
-      }
-    }
-    prevCandidatesRef.current = candidates;
-  }, [candidates]);
-
 
   const shortlistedCandidates = useMemo(
     () => candidates.filter((candidate) => candidate.resume_score >= 70 || candidate.screening_score >= 70),
@@ -598,7 +542,7 @@ const Hiring: React.FC = () => {
           </div>
         )}
 
-        <div className="grid items-start gap-6 xl:grid-cols-[1.7fr_1fr]">
+        <div className="grid items-start gap-6">
           <div ref={pipelineRef} className="h-full">
             <div className="h-full rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm">
               <div className="mb-4">
@@ -644,10 +588,6 @@ const Hiring: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
-
-          <div className="h-full">
-            <LiveActivityPanel activities={activities} isLive={calling} />
           </div>
         </div>
 
