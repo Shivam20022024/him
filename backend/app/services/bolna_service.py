@@ -213,7 +213,15 @@ class BolnaService:
         if current_status == "callback_required":
             update_doc["status"] = "callback_required"
         else:
-            update_doc["status"] = "completed" if is_completed else "calling"
+            if is_completed:
+                if not bool(transcript) or len(transcript.strip()) < 5:
+                    update_doc["status"] = "callback_required"
+                    update_doc["interest"] = "callback_required"
+                    update_doc["recruiter_verdict"] = "Call disconnected or no response. Callback required."
+                else:
+                    update_doc["status"] = "completed"
+            else:
+                update_doc["status"] = "calling"
 
         # Extract structured data from analysis or extracted_data if available
         ext_data = payload.get("extracted_data") or {}

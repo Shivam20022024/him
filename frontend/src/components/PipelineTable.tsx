@@ -103,6 +103,14 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
         </span>
       );
 
+    if (normalizedStatus === 'completed')
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+          <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+          Call Completed
+        </span>
+      );
+
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
         <div className="h-1.5 w-1.5 rounded-full bg-slate-600" />
