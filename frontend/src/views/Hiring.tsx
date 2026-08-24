@@ -638,7 +638,7 @@ const Hiring: React.FC = () => {
           />
         )}
 
-        <div ref={resultsRef} className="mt-8 border-t border-slate-200 pt-10">
+        <div ref={resultsRef} className="mt-6">
           <PremiumResultsSection 
             candidates={aiQualifiedCandidates} 
             isLoading={loading} 
