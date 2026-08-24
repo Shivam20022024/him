@@ -600,7 +600,7 @@ const Hiring: React.FC = () => {
 
         <div className="grid items-start gap-6 xl:grid-cols-[1.7fr_1fr]">
           <div ref={pipelineRef} className="h-full">
-            <div className="h-full rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="h-full rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm">
               <div className="mb-4">
                 <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-slate-100 mb-2">
                   <Users className="h-3 w-3" />
@@ -619,7 +619,7 @@ const Hiring: React.FC = () => {
                     isLoading={true}
                   />
                 ) : candidates.length === 0 ? (
-                  <div className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center shadow-sm">
+                  <div className="flex h-full flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center shadow-sm">
                     <div className="mx-auto inline-flex rounded-full bg-white p-4 text-slate-300 shadow-sm">
                       <Users className="h-8 w-8" />
                     </div>

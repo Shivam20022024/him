@@ -168,8 +168,8 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
 
       {/* Table */}
       {filteredAndSorted.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white px-6 py-8 text-center shadow-sm">
-          <div className="mx-auto mb-4 inline-flex rounded-2xl bg-slate-100 p-3 text-slate-400">
+        <div className="rounded-[24px] border border-slate-100 bg-white px-6 py-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 inline-flex rounded-full bg-slate-50 p-3 text-slate-400">
             <Search className="h-6 w-6" />
           </div>
           <p className="text-sm font-medium text-slate-600">No candidates found</p>
@@ -178,7 +178,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-[24px] border border-slate-100 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b border-slate-200 bg-slate-50">

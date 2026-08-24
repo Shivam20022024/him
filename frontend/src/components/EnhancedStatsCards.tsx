@@ -20,39 +20,33 @@ const EnhancedStatsCards: React.FC<EnhancedStatsCardsProps> = ({ stats }) => {
       {stats.map((stat, index) => (
         <div
           key={index}
-          className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md"
+          className="group relative overflow-hidden rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md flex flex-col justify-between min-h-[140px]"
         >
-          <div className="relative p-4">
-            <div className="mb-3 inline-flex rounded-2xl bg-slate-100 p-2 text-blue-600 transition-transform duration-200 group-hover:scale-105">
-              {stat.icon}
-            </div>
-
-            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <div className="flex items-start justify-between">
+            <h3 className="text-[15px] font-semibold text-slate-600">
               {stat.title}
             </h3>
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <div className="text-2xl font-black text-slate-950">
-                {stat.value}
-              </div>
-              {stat.trend && (
-                <div
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${
-                    stat.trend === 'up'
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : stat.trend === 'down'
-                        ? 'bg-red-50 text-red-700'
-                        : 'bg-slate-100 text-slate-600'
-                  }`}
-                >
-                  <TrendingUp className="h-3 w-3" />
-                  {stat.trendValue}
-                </div>
-              )}
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-50 text-slate-400">
+              {stat.icon}
             </div>
-
-            <p className="mt-3 text-sm text-slate-500">
-              {stat.subtitle}
-            </p>
+          </div>
+          
+          <div className="mt-4 flex items-end justify-between">
+            <div className="text-3xl font-black text-slate-900 tracking-tight">
+              {stat.value}
+            </div>
+            {stat.trend && stat.trend !== 'neutral' && (
+              <div
+                className={`flex items-center gap-1 text-sm font-bold ${
+                  stat.trend === 'up'
+                    ? 'text-emerald-500'
+                    : 'text-blue-600'
+                }`}
+              >
+                <TrendingUp className="h-4 w-4" />
+                <span>{stat.trendValue}</span>
+              </div>
+            )}
           </div>
         </div>
       ))}

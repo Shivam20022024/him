@@ -76,12 +76,12 @@ const LiveActivityPanel: React.FC<LiveActivityPanelProps> = ({
   };
 
   return (
-    <div className="h-full rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="h-full rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-black text-slate-950">Live Activity</h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <h2 className="text-[17px] font-bold text-slate-900 tracking-tight">Live Activity</h2>
+          <p className="mt-1 text-[13px] font-medium text-slate-500">
             Real-time updates from your outreach campaign
           </p>
         </div>
