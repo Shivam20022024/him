@@ -1,19 +1,17 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
-  Mic2, 
-  Activity, 
-  PhoneCall, 
-  BrainCircuit, 
-  CreditCard 
+  Briefcase, 
+  Users, 
+  LineChart, 
+  BrainCircuit 
 } from 'lucide-react';
 
 const Sidebar = () => {
   const navItems = [
-    { label: 'Jobs', path: '/jobs', icon: <LayoutDashboard size={18} /> },
-    { label: 'Hiring', path: '/hiring', icon: <Activity size={18} /> },
-    { label: 'Analytics', path: '/analytics', icon: <BrainCircuit size={18} /> },
+    { label: 'Jobs', path: '/jobs', icon: <Briefcase size={18} /> },
+    { label: 'Hiring', path: '/hiring', icon: <Users size={18} /> },
+    { label: 'Analytics', path: '/analytics', icon: <LineChart size={18} /> },
   ];
 
   return (
@@ -40,9 +38,9 @@ const Sidebar = () => {
               <NavLink
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all ${
+                  `flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all font-bold ${
                     isActive
-                      ? 'bg-slate-100 text-slate-900 font-bold'
+                      ? 'bg-slate-100 text-slate-900'
                       : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                   }`
                 }
