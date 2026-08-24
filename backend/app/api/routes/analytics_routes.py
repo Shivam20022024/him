@@ -108,7 +108,7 @@ async def get_role_metrics(
     org_id: str = Depends(get_context_organization_id)
 ):
     db = get_db()
-    base_match = {"organization_id": org_id, "job_id": {"$ne": None}}
+    base_match = {"organization_id": org_id}
     
     date_query = get_date_range_filter(date_range, custom_start, custom_end)
     if date_query:
@@ -138,10 +138,11 @@ async def get_role_metrics(
     
     enriched_results = []
     for r in results:
-        if not r["_id"]: continue
+        job_id = r["_id"]
+        role_name = jobs_map.get(job_id, "Unassigned Candidates") if job_id else "Unassigned Candidates"
         enriched_results.append({
-            "job_id": r["_id"],
-            "role": jobs_map.get(r["_id"], "Unknown Role"),
+            "job_id": job_id,
+            "role": role_name,
             "candidates": r["candidates"],
             "screened": r["screened"],
             "calls_completed": r["calls_completed"],
@@ -227,7 +228,6 @@ async def export_analytics(
         base_match["created_at"] = date_query
 
     if report_type == "roles":
-        base_match["job_id"] = {"$ne": None}
         pipeline = [
             {"$match": base_match},
             {"$group": {
@@ -245,11 +245,11 @@ async def export_analytics(
         jobs_cursor = db.jobs_board.find({"id": {"$in": job_ids}})
         jobs_map = {job["id"]: job["title"] for job in await jobs_cursor.to_list(None)}
         
-        data = []
         for r in results:
-            if not r["_id"]: continue
+            job_id = r["_id"]
+            role_name = jobs_map.get(job_id, "Unassigned Candidates") if job_id else "Unassigned Candidates"
             data.append({
-                "Role": jobs_map.get(r["_id"], "Unknown Role"),
+                "Role": role_name,
                 "Candidates": r["Candidates"],
                 "Screened": r["Screened"],
                 "Interviews": r["Interviews"],
