@@ -482,11 +482,11 @@ const Hiring: React.FC = () => {
               trendValue: candidates.length > 4 ? `+${candidates.length - 4}` : 'New',
             },
             {
-              title: 'New',
-              value: pendingCandidates.length,
-              icon: <BriefcaseBusiness className="h-5 w-5" />,
-              subtitle: 'Awaiting outreach',
-              trend: 'neutral',
+              title: 'Shortlisted',
+              value: shortlistedCandidates.length,
+              icon: <Star className="h-5 w-5" />,
+              subtitle: 'Strong matches (≥70%)',
+              trend: shortlistedCandidates.length > 0 ? 'up' : 'neutral',
             },
             {
               title: 'Interested',
@@ -496,11 +496,11 @@ const Hiring: React.FC = () => {
               trend: aiQualifiedCandidates.length > 0 ? 'up' : 'neutral',
             },
             {
-              title: 'Shortlisted',
-              value: shortlistedCandidates.length,
-              icon: <Star className="h-5 w-5" />,
-              subtitle: 'Strong matches (≥70%)',
-              trend: shortlistedCandidates.length > 0 ? 'up' : 'neutral',
+              title: 'Interviews',
+              value: interviewingCandidates.length,
+              icon: <Calendar className="h-5 w-5" />,
+              subtitle: 'Candidates in interview stage',
+              trend: interviewingCandidates.length > 0 ? 'up' : 'neutral',
             },
           ]}
         />
