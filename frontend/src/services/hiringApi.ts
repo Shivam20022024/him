@@ -270,7 +270,7 @@ export const hiringApi = {
     }
   },
 
-  async getDashboardMetrics(dateRange: string = 'all', jobId?: string) {
+  async getDashboardMetrics(dateRange: string = 'this_month', jobId?: string) {
     try {
       const query = new URLSearchParams({ date_range: dateRange });
       if (jobId) query.append('job_id', jobId);
@@ -282,7 +282,19 @@ export const hiringApi = {
     }
   },
 
-  async getRoleMetrics(dateRange: string = 'all') {
+  async getFunnelMetrics(dateRange: string = 'this_month', jobId?: string) {
+    try {
+      const query = new URLSearchParams({ date_range: dateRange });
+      if (jobId) query.append('job_id', jobId);
+      const { data } = await hiringClient.get(`/analytics/funnel?${query}`);
+      return data;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  },
+
+  async getRoleMetrics(dateRange: string = 'this_month') {
     try {
       const { data } = await hiringClient.get(`/analytics/roles?date_range=${dateRange}`);
       return data;
@@ -292,11 +304,23 @@ export const hiringApi = {
     }
   },
 
-  async getTrendData(metric: string, dateRange: string = 'all', jobId?: string) {
+  async getTrendData(metric: string, period: string = 'daily', dateRange: string = 'this_month', jobId?: string) {
     try {
-      const query = new URLSearchParams({ metric, date_range: dateRange });
+      const query = new URLSearchParams({ metric, period, date_range: dateRange });
       if (jobId) query.append('job_id', jobId);
       const { data } = await hiringClient.get(`/analytics/trend?${query}`);
+      return data;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  },
+
+  async getReportData(period: string = 'daily', dateRange: string = 'this_month', jobId?: string) {
+    try {
+      const query = new URLSearchParams({ period, date_range: dateRange });
+      if (jobId) query.append('job_id', jobId);
+      const { data } = await hiringClient.get(`/analytics/report?${query}`);
       return data;
     } catch (e) {
       console.error(e);

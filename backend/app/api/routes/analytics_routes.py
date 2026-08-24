@@ -1,131 +1,218 @@
+import os
+import tempfile
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List, Dict
 from datetime import datetime, timedelta
+from fastapi.responses import FileResponse
 from app.core.database import get_db
 from app.api.deps import get_context_organization_id
-import logging
-import tempfile
-import os
-from fastapi.responses import FileResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Analytics"])
 
-def get_date_range_filter(date_range: str, custom_start: Optional[str] = None, custom_end: Optional[str] = None):
+def get_date_ranges(date_range: str, custom_start: Optional[str] = None, custom_end: Optional[str] = None):
     now = datetime.utcnow()
-    query = {}
+    current_query = {}
+    prev_query = {}
     
     if date_range == "today":
-        start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        query = {"$gte": start_date}
+        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        current_query = {"$gte": start}
+        prev_start = start - timedelta(days=1)
+        prev_query = {"$gte": prev_start, "$lt": start}
     elif date_range == "yesterday":
-        start_date = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
-        end_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        query = {"$gte": start_date, "$lt": end_date}
+        start = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        end = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        current_query = {"$gte": start, "$lt": end}
+        prev_start = start - timedelta(days=1)
+        prev_query = {"$gte": prev_start, "$lt": start}
     elif date_range == "this_week":
-        start_date = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
-        query = {"$gte": start_date}
+        start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+        current_query = {"$gte": start}
+        prev_start = start - timedelta(days=7)
+        prev_query = {"$gte": prev_start, "$lt": start}
     elif date_range == "last_7_days":
-        start_date = (now - timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
-        query = {"$gte": start_date}
+        start = (now - timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0)
+        current_query = {"$gte": start}
+        prev_start = start - timedelta(days=7)
+        prev_query = {"$gte": prev_start, "$lt": start}
     elif date_range == "this_month":
-        start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        query = {"$gte": start_date}
+        start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        current_query = {"$gte": start}
+        last_day_prev_month = start - timedelta(days=1)
+        prev_start = last_day_prev_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        prev_query = {"$gte": prev_start, "$lt": start}
     elif date_range == "last_month":
         last_day_last_month = now.replace(day=1) - timedelta(days=1)
-        start_date = last_day_last_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        end_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        query = {"$gte": start_date, "$lt": end_date}
+        start = last_day_last_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        end = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        current_query = {"$gte": start, "$lt": end}
+        last_day_prev_prev_month = start - timedelta(days=1)
+        prev_start = last_day_prev_prev_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        prev_query = {"$gte": prev_start, "$lt": start}
     elif date_range == "this_quarter":
         quarter = (now.month - 1) // 3 + 1
         start_month = 3 * quarter - 2
-        start_date = now.replace(month=start_month, day=1, hour=0, minute=0, second=0, microsecond=0)
-        query = {"$gte": start_date}
+        start = now.replace(month=start_month, day=1, hour=0, minute=0, second=0, microsecond=0)
+        current_query = {"$gte": start}
+        prev_quarter_month = start_month - 3
+        prev_year = now.year
+        if prev_quarter_month <= 0:
+            prev_quarter_month += 12
+            prev_year -= 1
+        prev_start = now.replace(year=prev_year, month=prev_quarter_month, day=1, hour=0, minute=0, second=0, microsecond=0)
+        prev_query = {"$gte": prev_start, "$lt": start}
     elif date_range == "this_year":
-        start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        query = {"$gte": start_date}
+        start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        current_query = {"$gte": start}
+        prev_start = start.replace(year=start.year - 1)
+        prev_query = {"$gte": prev_start, "$lt": start}
     elif date_range == "custom" and custom_start and custom_end:
         try:
-            start_date = datetime.strptime(custom_start, "%Y-%m-%d")
-            end_date = datetime.strptime(custom_end, "%Y-%m-%d") + timedelta(days=1)
-            query = {"$gte": start_date, "$lt": end_date}
+            start = datetime.strptime(custom_start, "%Y-%m-%d")
+            end = datetime.strptime(custom_end, "%Y-%m-%d") + timedelta(days=1)
+            current_query = {"$gte": start, "$lt": end}
+            delta = end - start
+            prev_start = start - delta
+            prev_query = {"$gte": prev_start, "$lt": start}
         except ValueError:
             pass
 
-    return query
+    return current_query, prev_query
+
+def get_base_pipeline(metric: str):
+    # Returns the $cond for the specific metric.
+    if metric == "candidates":
+        return 1
+    if metric == "screened":
+        return {"$cond": [{"$gt": ["$resume_score", 0]}, 1, 0]}
+    if metric == "calls":
+        return {"$cond": [{"$eq": ["$call_status", "completed"]}, 1, 0]}
+    if metric == "interested":
+        return {"$cond": [{"$in": ["$status", ["interested", "interview_scheduled", "selected", "hired"]]}, 1, 0]}
+    if metric == "interviews":
+        return {"$cond": [{"$in": ["$status", ["interview_scheduled", "selected", "hired"]]}, 1, 0]}
+    if metric == "hired":
+        return {"$cond": [{"$eq": ["$status", "hired"]}, 1, 0]}
+    if metric == "callbacks":
+        return {"$cond": [{"$eq": ["$status", "callback_required"]}, 1, 0]}
+    return 0
 
 @router.get("/dashboard")
 async def get_dashboard_metrics(
     job_id: Optional[str] = None, 
-    date_range: str = "all",
+    date_range: str = "this_month",
     custom_start: Optional[str] = None,
     custom_end: Optional[str] = None,
     org_id: str = Depends(get_context_organization_id)
 ):
     db = get_db()
-    base_match = {"organization_id": org_id}
-    if job_id:
-        base_match["job_id"] = job_id
-        
-    date_query = get_date_range_filter(date_range, custom_start, custom_end)
-    if date_query:
-        base_match["created_at"] = date_query
-
-    pipeline = [
-        {"$match": base_match},
-        {"$group": {
-            "_id": None,
-            "total_candidates": {"$sum": 1},
-            "screened": {"$sum": {"$cond": [{"$gt": ["$resume_score", 0]}, 1, 0]}},
-            "calls_completed": {"$sum": {"$cond": [{"$eq": ["$call_status", "completed"]}, 1, 0]}},
-            "interested": {"$sum": {"$cond": [{"$in": ["$status", ["interested", "interview_scheduled", "selected", "hired"]]}, 1, 0]}},
-            "callback_required": {"$sum": {"$cond": [{"$eq": ["$status", "callback_required"]}, 1, 0]}},
-            "not_interested": {"$sum": {"$cond": [{"$eq": ["$status", "not_interested"]}, 1, 0]}},
-            "interviews": {"$sum": {"$cond": [{"$in": ["$status", ["interview_scheduled", "selected", "hired"]]}, 1, 0]}},
-            "selected": {"$sum": {"$cond": [{"$in": ["$status", ["selected", "hired"]]}, 1, 0]}},
-            "hired": {"$sum": {"$cond": [{"$eq": ["$status", "hired"]}, 1, 0]}}
-        }}
-    ]
     
-    result = await db.candidates.aggregate(pipeline).to_list(1)
+    current_date_query, prev_date_query = get_date_ranges(date_range, custom_start, custom_end)
     
-    if result:
-        metrics = result[0]
-        metrics.pop("_id", None)
-        return metrics
-    else:
+    async def fetch_metrics(date_filter):
+        match = {"organization_id": org_id}
+        if job_id:
+            match["job_id"] = job_id
+        if date_filter:
+            match["created_at"] = date_filter
+            
+        pipeline = [
+            {"$match": match},
+            {"$group": {
+                "_id": None,
+                "total_candidates": {"$sum": 1},
+                "screened": {"$sum": get_base_pipeline("screened")},
+                "calls_completed": {"$sum": get_base_pipeline("calls")},
+                "interested": {"$sum": get_base_pipeline("interested")},
+                "callback_required": {"$sum": get_base_pipeline("callbacks")},
+                "interviews": {"$sum": get_base_pipeline("interviews")},
+                "hired": {"$sum": get_base_pipeline("hired")}
+            }}
+        ]
+        res = await db.candidates.aggregate(pipeline).to_list(1)
+        if res:
+            res[0].pop("_id", None)
+            return res[0]
         return {
             "total_candidates": 0, "screened": 0, "calls_completed": 0, 
-            "interested": 0, "callback_required": 0, "not_interested": 0,
-            "interviews": 0, "selected": 0, "hired": 0
+            "interested": 0, "callback_required": 0, "interviews": 0, "hired": 0
         }
+
+    current = await fetch_metrics(current_date_query)
+    previous = await fetch_metrics(prev_date_query)
+    
+    # Calculate percentage changes
+    def calc_pct(curr, prev):
+        if prev == 0:
+            return 100 if curr > 0 else 0
+        return round(((curr - prev) / prev) * 100, 1)
+
+    return {
+        "current": current,
+        "previous": previous,
+        "trends": {k: calc_pct(current[k], previous[k]) for k in current.keys()}
+    }
+
+@router.get("/funnel")
+async def get_funnel_metrics(
+    job_id: Optional[str] = None,
+    date_range: str = "this_month",
+    custom_start: Optional[str] = None,
+    custom_end: Optional[str] = None,
+    org_id: str = Depends(get_context_organization_id)
+):
+    db = get_db()
+    current_date_query, _ = get_date_ranges(date_range, custom_start, custom_end)
+    match = {"organization_id": org_id}
+    if job_id:
+        match["job_id"] = job_id
+    if current_date_query:
+        match["created_at"] = current_date_query
+
+    pipeline = [
+        {"$match": match},
+        {"$group": {
+            "_id": None,
+            "candidates": {"$sum": 1},
+            "screened": {"$sum": get_base_pipeline("screened")},
+            "interested": {"$sum": get_base_pipeline("interested")},
+            "interview": {"$sum": get_base_pipeline("interviews")},
+            "selected": {"$sum": {"$cond": [{"$in": ["$status", ["selected", "hired"]]}, 1, 0]}},
+            "hired": {"$sum": get_base_pipeline("hired")}
+        }}
+    ]
+    res = await db.candidates.aggregate(pipeline).to_list(1)
+    if res:
+        res[0].pop("_id", None)
+        return res[0]
+    return {"candidates": 0, "screened": 0, "interested": 0, "interview": 0, "selected": 0, "hired": 0}
 
 @router.get("/roles")
 async def get_role_metrics(
-    date_range: str = "all",
+    date_range: str = "this_month",
     custom_start: Optional[str] = None,
     custom_end: Optional[str] = None,
     org_id: str = Depends(get_context_organization_id)
 ):
     db = get_db()
-    base_match = {"organization_id": org_id}
-    
-    date_query = get_date_range_filter(date_range, custom_start, custom_end)
-    if date_query:
-        base_match["created_at"] = date_query
+    current_date_query, _ = get_date_ranges(date_range, custom_start, custom_end)
+    match = {"organization_id": org_id}
+    if current_date_query:
+        match["created_at"] = current_date_query
 
     pipeline = [
-        {"$match": base_match},
+        {"$match": match},
         {"$group": {
             "_id": "$job_id",
             "candidates": {"$sum": 1},
-            "screened": {"$sum": {"$cond": [{"$gt": ["$resume_score", 0]}, 1, 0]}},
-            "calls_completed": {"$sum": {"$cond": [{"$eq": ["$call_status", "completed"]}, 1, 0]}},
-            "interested": {"$sum": {"$cond": [{"$in": ["$status", ["interested", "interview_scheduled", "selected", "hired"]]}, 1, 0]}},
-            "callbacks": {"$sum": {"$cond": [{"$eq": ["$status", "callback_required"]}, 1, 0]}},
-            "interviews": {"$sum": {"$cond": [{"$in": ["$status", ["interview_scheduled", "selected", "hired"]]}, 1, 0]}},
-            "selected": {"$sum": {"$cond": [{"$in": ["$status", ["selected", "hired"]]}, 1, 0]}},
-            "hired": {"$sum": {"$cond": [{"$eq": ["$status", "hired"]}, 1, 0]}}
+            "screened": {"$sum": get_base_pipeline("screened")},
+            "calls_completed": {"$sum": get_base_pipeline("calls")},
+            "interested": {"$sum": get_base_pipeline("interested")},
+            "callbacks": {"$sum": get_base_pipeline("callbacks")},
+            "interviews": {"$sum": get_base_pipeline("interviews")},
+            "hired": {"$sum": get_base_pipeline("hired")}
         }}
     ]
     
@@ -149,7 +236,6 @@ async def get_role_metrics(
             "interested": r["interested"],
             "callbacks": r["callbacks"],
             "interviews": r["interviews"],
-            "selected": r["selected"],
             "hired": r["hired"]
         })
         
@@ -157,45 +243,34 @@ async def get_role_metrics(
 
 @router.get("/trend")
 async def get_trend_data(
-    metric: str = "candidates", # candidates, screened, interested, interviews, hired
+    metric: str = "candidates", 
+    period: str = "daily", # daily, weekly, monthly
     job_id: Optional[str] = None, 
-    date_range: str = "last_7_days",
+    date_range: str = "this_month",
     custom_start: Optional[str] = None,
     custom_end: Optional[str] = None,
     org_id: str = Depends(get_context_organization_id)
 ):
     db = get_db()
-    base_match = {"organization_id": org_id}
+    current_date_query, _ = get_date_ranges(date_range, custom_start, custom_end)
+    match = {"organization_id": org_id}
     if job_id:
-        base_match["job_id"] = job_id
-        
-    date_query = get_date_range_filter(date_range, custom_start, custom_end)
-    if date_query:
-        base_match["created_at"] = date_query
+        match["job_id"] = job_id
+    if current_date_query:
+        match["created_at"] = current_date_query
+
+    format_str = "%Y-%m-%d"
+    if period == "weekly":
+        format_str = "%Y-%U"
+    elif period == "monthly":
+        format_str = "%Y-%m"
         
     pipeline = [
-        {"$match": base_match},
+        {"$match": match},
         {
             "$project": {
-                "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}},
-                "is_match": {
-                    "$cond": [
-                        {"$eq": [metric, "candidates"]}, 1,
-                        {"$cond": [
-                            {"$eq": [metric, "screened"]}, {"$cond": [{"$gt": ["$resume_score", 0]}, 1, 0]},
-                            {"$cond": [
-                                {"$eq": [metric, "interested"]}, {"$cond": [{"$in": ["$status", ["interested", "interview_scheduled", "selected", "hired"]]}, 1, 0]},
-                                {"$cond": [
-                                    {"$eq": [metric, "interviews"]}, {"$cond": [{"$in": ["$status", ["interview_scheduled", "selected", "hired"]]}, 1, 0]},
-                                    {"$cond": [
-                                        {"$eq": [metric, "hired"]}, {"$cond": [{"$eq": ["$status", "hired"]}, 1, 0]},
-                                        0
-                                    ]}
-                                ]}
-                            ]}
-                        ]}
-                    ]
-                }
+                "date": {"$dateToString": {"format": format_str, "date": "$created_at"}},
+                "is_match": get_base_pipeline(metric)
             }
         },
         {"$group": {
@@ -206,15 +281,54 @@ async def get_trend_data(
     ]
     
     results = await db.candidates.aggregate(pipeline).to_list(100)
+    return [{"date": r["_id"], "count": r["count"]} for r in results]
+
+@router.get("/report")
+async def get_report_data(
+    period: str = "daily", # daily, weekly, monthly
+    job_id: Optional[str] = None,
+    date_range: str = "this_month",
+    custom_start: Optional[str] = None,
+    custom_end: Optional[str] = None,
+    org_id: str = Depends(get_context_organization_id)
+):
+    db = get_db()
+    current_date_query, _ = get_date_ranges(date_range, custom_start, custom_end)
+    match = {"organization_id": org_id}
+    if job_id:
+        match["job_id"] = job_id
+    if current_date_query:
+        match["created_at"] = current_date_query
+
+    format_str = "%Y-%m-%d"
+    if period == "weekly":
+        format_str = "%Y-%U"
+    elif period == "monthly":
+        format_str = "%Y-%m"
+
+    pipeline = [
+        {"$match": match},
+        {"$group": {
+            "_id": {"$dateToString": {"format": format_str, "date": "$created_at"}},
+            "candidates": {"$sum": 1},
+            "screened": {"$sum": get_base_pipeline("screened")},
+            "calls": {"$sum": get_base_pipeline("calls")},
+            "interested": {"$sum": get_base_pipeline("interested")},
+            "callbacks": {"$sum": get_base_pipeline("callbacks")},
+            "interviews": {"$sum": get_base_pipeline("interviews")},
+            "hired": {"$sum": get_base_pipeline("hired")}
+        }},
+        {"$sort": {"_id": -1}} # newest first
+    ]
     
-    formatted = [{"date": r["_id"], "count": r["count"]} for r in results]
-    return formatted
+    results = await db.candidates.aggregate(pipeline).to_list(100)
+    return [{"date": r["_id"], **{k: v for k, v in r.items() if k != "_id"}} for r in results]
 
 @router.get("/export")
 async def export_analytics(
     report_type: str = Query(..., description="daily, weekly, monthly, roles"),
     format: str = Query("excel", description="excel or csv"),
-    date_range: str = "all",
+    date_range: str = "this_month",
     custom_start: Optional[str] = None,
     custom_end: Optional[str] = None,
     org_id: str = Depends(get_context_organization_id)
@@ -222,25 +336,26 @@ async def export_analytics(
     import pandas as pd
     
     db = get_db()
-    base_match = {"organization_id": org_id}
-    date_query = get_date_range_filter(date_range, custom_start, custom_end)
-    if date_query:
-        base_match["created_at"] = date_query
+    current_date_query, _ = get_date_ranges(date_range, custom_start, custom_end)
+    match = {"organization_id": org_id}
+    if current_date_query:
+        match["created_at"] = current_date_query
 
+    data = []
+    
     if report_type == "roles":
         pipeline = [
-            {"$match": base_match},
+            {"$match": match},
             {"$group": {
                 "_id": "$job_id",
                 "Candidates": {"$sum": 1},
-                "Screened": {"$sum": {"$cond": [{"$gt": ["$resume_score", 0]}, 1, 0]}},
-                "Interviews": {"$sum": {"$cond": [{"$in": ["$status", ["interview_scheduled", "selected", "hired"]]}, 1, 0]}},
-                "Hired": {"$sum": {"$cond": [{"$eq": ["$status", "hired"]}, 1, 0]}}
+                "Screened": {"$sum": get_base_pipeline("screened")},
+                "Interviews": {"$sum": get_base_pipeline("interviews")},
+                "Hired": {"$sum": get_base_pipeline("hired")}
             }}
         ]
         results = await db.candidates.aggregate(pipeline).to_list(100)
         
-        # Get Job Titles
         job_ids = [r["_id"] for r in results if r["_id"]]
         jobs_cursor = db.jobs_board.find({"id": {"$in": job_ids}})
         jobs_map = {job["id"]: job["title"] for job in await jobs_cursor.to_list(None)}
@@ -256,22 +371,18 @@ async def export_analytics(
                 "Hired": r["Hired"]
             })
     else:
-        # Time-based grouping (daily, weekly, monthly)
-        if report_type == "monthly":
-            date_format = "%Y-%m"
-        elif report_type == "weekly":
-            date_format = "%Y-%U" # Year and Week number
-        else:
-            date_format = "%Y-%m-%d" # Daily
+        date_format = "%Y-%m-%d"
+        if report_type == "monthly": date_format = "%Y-%m"
+        elif report_type == "weekly": date_format = "%Y-%U"
             
         pipeline = [
-            {"$match": base_match},
+            {"$match": match},
             {"$group": {
                 "_id": {"$dateToString": {"format": date_format, "date": "$created_at"}},
                 "Candidates": {"$sum": 1},
-                "Screened": {"$sum": {"$cond": [{"$gt": ["$resume_score", 0]}, 1, 0]}},
-                "Interviews": {"$sum": {"$cond": [{"$in": ["$status", ["interview_scheduled", "selected", "hired"]]}, 1, 0]}},
-                "Hired": {"$sum": {"$cond": [{"$eq": ["$status", "hired"]}, 1, 0]}}
+                "Screened": {"$sum": get_base_pipeline("screened")},
+                "Interviews": {"$sum": get_base_pipeline("interviews")},
+                "Hired": {"$sum": get_base_pipeline("hired")}
             }},
             {"$sort": {"_id": 1}}
         ]
