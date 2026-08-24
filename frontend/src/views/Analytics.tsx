@@ -117,44 +117,69 @@ const Analytics: React.FC = () => {
           </div>
         )}
 
-        {/* Activity Trend Chart */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-slate-900">Activity Trend</h3>
-            <div className="flex bg-slate-100 p-1 rounded-lg">
-              {['candidates', 'screened', 'interested'].map(metric => (
-                <button
-                  key={metric}
-                  onClick={() => setTrendMetric(metric)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-md capitalize transition-colors ${trendMetric === metric ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  {metric}
-                </button>
-              ))}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Activity Trend Chart */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold text-slate-900">Activity Trend</h3>
+              <div className="flex bg-slate-100 p-1 rounded-lg">
+                {['candidates', 'screened', 'interested'].map(metric => (
+                  <button
+                    key={metric}
+                    onClick={() => setTrendMetric(metric)}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-md capitalize transition-colors ${trendMetric === metric ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    {metric}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                  <RechartsTooltip 
+                    contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                    cursor={{stroke: '#e2e8f0', strokeWidth: 2}}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="count" 
+                    name="Count"
+                    stroke="#2563eb" 
+                    strokeWidth={3}
+                    dot={{fill: '#2563eb', strokeWidth: 2, r: 4}}
+                    activeDot={{r: 6}}
+                    animationDuration={1000}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <RechartsTooltip 
-                  contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-                  cursor={{stroke: '#e2e8f0', strokeWidth: 2}}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="count" 
-                  name="Count"
-                  stroke="#2563eb" 
-                  strokeWidth={3}
-                  dot={{fill: '#2563eb', strokeWidth: 2, r: 4}}
-                  activeDot={{r: 6}}
-                  animationDuration={1000}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+
+          {/* Role Pipeline Chart */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold text-slate-900">Pipeline by Role</h3>
+            </div>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={rolesData} layout="vertical" margin={{ top: 0, right: 0, left: 60, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                  <YAxis dataKey="role" type="category" axisLine={false} tickLine={false} tick={{fill: '#475569', fontSize: 12, fontWeight: 500}} />
+                  <RechartsTooltip 
+                    contentStyle={{borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+                    cursor={{fill: '#f8fafc'}}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  <Bar dataKey="candidates" name="Total Candidates" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={16} />
+                  <Bar dataKey="interested" name="Interested" fill="#10b981" radius={[0, 4, 4, 0]} barSize={16} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
