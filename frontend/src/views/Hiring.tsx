@@ -496,11 +496,11 @@ const Hiring: React.FC = () => {
               trend: aiQualifiedCandidates.length > 0 ? 'up' : 'neutral',
             },
             {
-              title: 'Interviews',
-              value: interviewingCandidates.length,
-              icon: <Calendar className="h-5 w-5" />,
-              subtitle: 'Candidates in interview stage',
-              trend: interviewingCandidates.length > 0 ? 'up' : 'neutral',
+              title: 'Pending Outreach',
+              value: pendingCandidates.length,
+              icon: <PhoneCall className="h-5 w-5" />,
+              subtitle: 'Awaiting AI screening call',
+              trend: 'neutral',
             },
           ]}
         />
