@@ -568,7 +568,7 @@ const Hiring: React.FC = () => {
           onSendEmails={handleSendEmails}
           onViewResults={scrollToResults}
           onDownloadCandidates={() => hiringApi.downloadExcel('candidates', selectedDate, activeJobId)}
-          onDownloadCalls={() => hiringApi.downloadExcel('calls', selectedDate)}
+          onDownloadCalls={() => hiringApi.downloadExcel('calls', selectedDate, activeJobId)}
           isGlobal={!activeJobId}
         />
 

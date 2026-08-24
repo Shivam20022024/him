@@ -448,8 +448,54 @@ async def export_candidates(date: str = None, job_id: str = None, org_id: str = 
     return FileResponse(path=temp_path, filename=filename, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 @router.get("/export/calls")
-async def export_call_results(org_id: str = Depends(get_context_organization_id)):
-    file_path = ExcelService.get_call_results_file_path(org_id)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="No call results file found for this organization.")
-    return FileResponse(path=file_path, filename=f"candidate_call_results_{org_id}.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+async def export_call_results(date: str = None, job_id: str = None, org_id: str = Depends(get_context_organization_id)):
+    db = get_db()
+    query = {"organization_id": org_id, "call_status": "completed"}
+    if job_id:
+        query["job_id"] = job_id
+    if date:
+        try:
+            from datetime import datetime, timedelta
+            start_date = datetime.strptime(date, "%Y-%m-%d")
+            end_date = start_date + timedelta(days=1)
+            query["created_at"] = {"$gte": start_date, "$lt": end_date}
+        except ValueError:
+            pass
+
+    cursor = db.candidates.find(query).sort("created_at", -1)
+    candidates = await cursor.to_list(length=1000)
+
+    import tempfile
+    from openpyxl import Workbook
+    from app.services.excel_service import ExcelService
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Call Results"
+    ws.append(ExcelService.CALL_RESULTS_HEADERS)
+
+    for c in candidates:
+        row = [
+            str(c.get("id", c.get("_id", "N/A"))),
+            c.get("name", "N/A"),
+            c.get("email", "N/A"),
+            c.get("phone", "N/A"),
+            c.get("role", "N/A"),
+            c.get("screening_skills", "N/A"),
+            c.get("screening_skills", "N/A"), # Relevant exp
+            c.get("employment_status", "N/A"),
+            c.get("screening_availability", "N/A"),
+            c.get("interview_time", "N/A"),
+            c.get("interest", "N/A"),
+            c.get("transcript", "N/A"),
+            c.get("recording_url", "N/A"),
+            c.get("created_at", datetime.now()).strftime("%Y-%m-%d %H:%M:%S") if isinstance(c.get("created_at"), datetime) else "N/A"
+        ]
+        ws.append(row)
+
+    fd, temp_path = tempfile.mkstemp(suffix=".xlsx")
+    os.close(fd)
+    wb.save(temp_path)
+    
+    filename = f"call_results_{org_id}_{date}.xlsx" if date else f"call_results_{org_id}.xlsx"
+    return FileResponse(path=temp_path, filename=filename, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
