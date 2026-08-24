@@ -315,72 +315,7 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidate, onCl
 
           </div>
 
-          {/* Right: Sticky Sidebar (25%) */}
-          <div className="w-[320px] lg:w-[380px] shrink-0 border-l border-slate-200 bg-slate-50 overflow-y-auto hidden md:block">
-            <div className="p-6 space-y-8">
-              
-              {/* Quick Actions */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Quick Actions</h3>
-                <div className="grid grid-cols-1 gap-2">
-                  <button onClick={() => onStatusChange?.('interview_scheduled')} className="w-full text-left rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200 shadow-sm flex items-center gap-2">
-                    <Calendar size={16} className="text-blue-600" /> Schedule Interview
-                  </button>
-                  <button onClick={() => onCallCandidate?.(candidate)} className="w-full text-left rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200 shadow-sm flex items-center gap-2">
-                    <Phone size={16} className="text-blue-600" /> AI Screen Candidate
-                  </button>
-                </div>
-              </div>
 
-              {/* Job Details */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Target Role</h3>
-                <div className="rounded-lg bg-white p-4 border border-slate-200 shadow-sm">
-                  <p className="text-sm font-bold text-slate-900 mb-1">{candidate.role || 'General Position'}</p>
-                  <p className="text-xs font-medium text-slate-500 line-clamp-3">
-                    {candidate.job_description || 'No specific job description provided for this evaluation.'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Documents */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Documents</h3>
-                <div className="rounded-lg bg-white p-3 border border-slate-200 shadow-sm flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-100 rounded-lg text-slate-500">
-                      <FileText size={16} />
-                    </div>
-                    <div className="max-w-[150px]">
-                      <p className="text-xs font-bold text-slate-900 truncate">{candidate.name.replace(/\s/g, '_')}_Resume.pdf</p>
-                      <p className="text-[10px] font-medium text-slate-500">PDF Document</p>
-                    </div>
-                  </div>
-                  <Download size={16} className="text-slate-400" />
-                </div>
-              </div>
-
-              {/* Timeline */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Activity Timeline</h3>
-                <div className="relative pl-3 space-y-4 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200">
-                  {candidate.last_interaction && (
-                    <div className="relative pl-6">
-                      <div className="absolute left-[-5px] top-1 h-3 w-3 rounded-full border-2 border-white bg-blue-500 shadow-sm" />
-                      <p className="text-xs font-bold text-slate-900">Latest Update</p>
-                      <p className="text-[10px] font-medium text-slate-500 mt-0.5">{new Date(candidate.last_interaction).toLocaleString()}</p>
-                    </div>
-                  )}
-                  <div className="relative pl-6">
-                    <div className="absolute left-[-5px] top-1 h-3 w-3 rounded-full border-2 border-white bg-slate-300 shadow-sm" />
-                    <p className="text-xs font-bold text-slate-900">Application Received</p>
-                    <p className="text-[10px] font-medium text-slate-500 mt-0.5">{new Date(candidate.created_at || Date.now()).toLocaleString()}</p>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
         </div>
       </div>
 
