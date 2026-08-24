@@ -27,6 +27,7 @@ const Hiring: React.FC = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [isUploadedExpanded, setIsUploadedExpanded] = useState(true);
   const [calling, setCalling] = useState(false);
   const [notification, setNotification] = useState<Notification>(null);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -546,47 +547,62 @@ const Hiring: React.FC = () => {
           <div ref={pipelineRef} className="h-full">
             <div className="h-full rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm">
               <div className="mb-4">
-                <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-slate-100 mb-2">
-                  <Users className="h-3 w-3" />
-                  Real-time Pipeline
+              <div 
+                className="mb-4 flex items-center justify-between cursor-pointer select-none"
+                onClick={() => setIsUploadedExpanded(!isUploadedExpanded)}
+              >
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-slate-100 mb-2">
+                    <Users className="h-3 w-3" />
+                    Real-time Pipeline
+                  </div>
+                  <h2 className="text-[17px] font-bold text-slate-900 tracking-tight">Uploaded Candidates</h2>
+                  <p className="mt-1 text-[13px] font-medium text-slate-500">
+                    Manage resumes you've uploaded and track their screening progress.
+                  </p>
                 </div>
-                <h2 className="text-xl font-black text-slate-950">Uploaded Candidates</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  Manage resumes you've uploaded and track their screening progress.
-                </p>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
+                  {isUploadedExpanded ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  )}
+                </div>
               </div>
 
-              <div className="h-full">
-                {loading ? (
-                  <PipelineTable
-                    candidates={[]}
-                    isLoading={true}
-                  />
-                ) : candidates.length === 0 ? (
-                  <div className="flex h-full flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center shadow-sm">
-                    <div className="mx-auto inline-flex rounded-full bg-white p-4 text-slate-300 shadow-sm">
-                      <Users className="h-8 w-8" />
+              {isUploadedExpanded && (
+                <div className="h-full">
+                  {loading ? (
+                    <PipelineTable
+                      candidates={[]}
+                      isLoading={true}
+                    />
+                  ) : candidates.length === 0 ? (
+                    <div className="flex h-full flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center shadow-sm">
+                      <div className="mx-auto inline-flex rounded-full bg-white p-4 text-slate-300 shadow-sm">
+                        <Users className="h-8 w-8" />
+                      </div>
+                      <h3 className="mt-4 text-lg font-bold text-slate-900">No candidates uploaded yet</h3>
+                      <p className="mt-2 text-sm text-slate-500 max-w-xs">
+                        Upload candidate resumes to begin AI screening and outreach.
+                      </p>
+                      <button
+                        onClick={() => setShowAddCandidate(true)}
+                        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        Upload Candidates
+                      </button>
                     </div>
-                    <h3 className="mt-4 text-lg font-bold text-slate-900">No candidates uploaded yet</h3>
-                    <p className="mt-2 text-sm text-slate-500 max-w-xs">
-                      Upload candidate resumes to begin AI screening and outreach.
-                    </p>
-                    <button
-                      onClick={() => setShowAddCandidate(true)}
-                      className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      Upload Candidates
-                    </button>
-                  </div>
-                ) : (
-                  <PipelineTable
-                    candidates={candidates}
-                    onCallCandidate={handleCallCandidate}
-                    onDeleteCandidate={handleDeleteCandidate}
-                    isLoading={false}
-                  />
-                )}
-              </div>
+                  ) : (
+                    <PipelineTable
+                      candidates={candidates}
+                      onCallCandidate={handleCallCandidate}
+                      onDeleteCandidate={handleDeleteCandidate}
+                      isLoading={false}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
