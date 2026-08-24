@@ -25,9 +25,7 @@ const Sidebar = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-black text-slate-900 tracking-tight">Hireonomous</h1>
-              <span className="rounded bg-blue-50 border border-blue-100 px-1.5 py-0.5 text-[9px] font-black text-blue-600 uppercase tracking-wider">Beta</span>
             </div>
-            <p className="text-[10px] font-medium text-slate-500 mt-0.5 tracking-wide uppercase">AI Voice Assistant</p>
           </div>
         </div>
 
