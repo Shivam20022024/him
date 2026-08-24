@@ -122,7 +122,7 @@ const Analytics: React.FC = () => {
         
         <div className="flex flex-col gap-1 pt-4 pb-2">
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Hiring Analytics</h2>
-          <p className="text-base font-medium text-slate-600">Track recruitment performance and activity.</p>
+          <p className="text-base font-semibold text-slate-800">Track recruitment performance and activity.</p>
         </div>
 
         <div className="flex flex-wrap gap-sm py-sm">
