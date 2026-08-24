@@ -516,7 +516,7 @@ const Hiring: React.FC = () => {
         />
 
         {showAddCandidate && (
-          <div className="mx-auto w-full max-w-4xl">
+          <div className="w-full">
             <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
