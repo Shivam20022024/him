@@ -16,8 +16,7 @@ import PremiumResultsSection from '../components/PremiumResultsSection';
 
 // Demo candidates removed per requirement
 
-
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 type Notification = {
   tone: 'success' | 'info' | 'warning';
@@ -43,8 +42,8 @@ const Hiring: React.FC = () => {
   });
   const pipelineRef = useRef<HTMLDivElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
-
-  const activeJobId = new URLSearchParams(window.location.search).get('jobId') || undefined;
+  const location = useLocation();
+  const activeJobId = new URLSearchParams(location.search).get('jobId') || undefined;
 
   const loadCandidates = async (silent = false, dateToLoad?: string) => {
     if (!silent) setLoading(true);
@@ -98,7 +97,7 @@ const Hiring: React.FC = () => {
     };
 
     fetchInitialData();
-  }, [selectedDate]);
+  }, [selectedDate, location.search]);
 
   // Real-time polling for status updates
   useEffect(() => {
