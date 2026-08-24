@@ -120,9 +120,9 @@ const Analytics: React.FC = () => {
       {/* Header handled by App layout, but we match inner spacing */}
       <div className="flex flex-col w-full pb-safe gap-md px-md max-w-container-max mx-auto">
         
-        <div className="flex flex-col gap-xs pt-sm">
-          <h2 className="font-headline-md font-bold text-on-surface">Hiring Analytics</h2>
-          <p className="font-body-md font-bold text-text-muted">Track recruitment performance and activity.</p>
+        <div className="flex flex-col gap-1 pt-4 pb-2">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Hiring Analytics</h2>
+          <p className="text-base font-medium text-slate-600">Track recruitment performance and activity.</p>
         </div>
 
         <div className="flex flex-wrap gap-sm py-sm">
