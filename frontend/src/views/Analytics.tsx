@@ -106,27 +106,39 @@ const Analytics: React.FC = () => {
 
   const { current = {}, previous = {}, trends = {} } = dashboardData || {};
 
-  const StatCard = ({ title, value, trend, icon: Icon }: any) => {
+  const StatCard = ({ title, value, trend, icon: Icon, specialTheme }: any) => {
     const isPositive = trend >= 0;
+    
+    // Apply special styling if it's the Hired card to match the Stitch mockup
+    const containerClasses = specialTheme === 'success' 
+      ? "rounded-2xl bg-emerald-100 p-5 shadow-sm transition-all hover:shadow-md border border-emerald-200"
+      : "rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md";
+      
+    const textClasses = specialTheme === 'success' ? "text-emerald-900" : "text-slate-900";
+    const labelClasses = specialTheme === 'success' ? "text-emerald-800" : "text-slate-500";
+    const iconBgClasses = specialTheme === 'success' ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-600";
+    const trendText = specialTheme === 'success' ? "text-emerald-800" : (isPositive ? 'text-emerald-600' : 'text-red-500');
+    const vsText = specialTheme === 'success' ? "text-emerald-700/80" : "text-slate-400";
+
     return (
-      <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:shadow-md">
+      <div className={containerClasses}>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">{title}</p>
-            <h3 className="mt-2 text-3xl font-black text-slate-900">{value || 0}</h3>
+            <p className={`text-xs font-bold uppercase tracking-wider ${labelClasses}`}>{title}</p>
+            <h3 className={`mt-2 text-3xl font-black ${textClasses}`}>{value || 0}</h3>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+          <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBgClasses}`}>
             <Icon className="h-5 w-5" />
           </div>
         </div>
         <div className="mt-4 flex items-center gap-1.5">
           {trend !== undefined && (
-            <div className={`flex items-center gap-1 text-xs font-bold ${isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
+            <div className={`flex items-center gap-1 text-xs font-bold ${trendText}`}>
               {isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
               <span>{Math.abs(trend)}%</span>
             </div>
           )}
-          <span className="text-xs font-medium text-slate-400">vs previous period</span>
+          <span className={`text-xs font-medium ${vsText}`}>vs previous period</span>
         </div>
       </div>
     );
@@ -259,7 +271,7 @@ const Analytics: React.FC = () => {
             <StatCard title="Interested" value={current.interested} trend={trends.interested} icon={Heart} />
             <StatCard title="Callbacks" value={current.callback_required} trend={trends.callback_required} icon={PhoneCall} />
             <StatCard title="Interviews" value={current.interviews} trend={trends.interviews} icon={Calendar} />
-            <StatCard title="Hired" value={current.hired} trend={trends.hired} icon={CheckCircle} />
+            <StatCard title="Hired" value={current.hired} trend={trends.hired} icon={CheckCircle} specialTheme="success" />
           </div>
         )}
 
