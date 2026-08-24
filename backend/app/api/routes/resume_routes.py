@@ -24,6 +24,7 @@ class ManualCandidate(BaseModel):
     phone: str
     skills: List[str]
     role: Optional[str] = "Manual Entry"
+    job_id: Optional[str] = None
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -87,6 +88,7 @@ async def upload_resume(
     job_description: str = Form("We are looking for a software engineer with Python and AI experience."),
     jd_file: UploadFile | None = File(None),
     skip_ai: bool = Form(False),
+    job_id: Optional[str] = Form(None),
     org_id: str = Depends(get_context_organization_id)
 ):
     start_time = time.time()
@@ -198,6 +200,7 @@ async def upload_resume(
             "role": result.get("role"),
             "ai_summary": result.get("reason"),
             "organization_id": org_id,
+            "job_id": job_id,
             "created_at": datetime.utcnow()
         }
 
@@ -272,6 +275,7 @@ async def add_manual_candidate(candidate: ManualCandidate, org_id: str = Depends
         "role": candidate.role,
         "ai_summary": "Manually added candidate without AI parsing.",
         "organization_id": org_id,
+        "job_id": candidate.job_id,
         "created_at": datetime.utcnow()
     }
 
@@ -311,10 +315,13 @@ async def delete_candidate(candidate_id: str, org_id: str = Depends(get_context_
 
 
 @router.get("/shortlisted")
-async def get_shortlisted_candidates(org_id: str = Depends(get_context_organization_id)):
+async def get_shortlisted_candidates(job_id: str = None, org_id: str = Depends(get_context_organization_id)):
     logger.info("Fetching shortlisted candidates...")
     db = get_db()
-    cursor = db.candidates.find({"resume_score": {"$gte": settings.SHORTLIST_THRESHOLD}, "organization_id": org_id}).sort("created_at", -1)
+    query = {"resume_score": {"$gte": settings.SHORTLIST_THRESHOLD}, "organization_id": org_id}
+    if job_id:
+        query["job_id"] = job_id
+    cursor = db.candidates.find(query).sort("created_at", -1)
     candidates = await cursor.to_list(length=100)
     
     results = [format_candidate_response(c) for c in candidates]
@@ -322,11 +329,13 @@ async def get_shortlisted_candidates(org_id: str = Depends(get_context_organizat
 
 
 @router.get("/candidates")
-async def get_all_candidates(date: str = None, org_id: str = Depends(get_context_organization_id)):
+async def get_all_candidates(date: str = None, job_id: str = None, org_id: str = Depends(get_context_organization_id)):
     logger.info(f"Fetching all candidates... date={date}")
     db = get_db()
     
     query = {"organization_id": org_id}
+    if job_id:
+        query["job_id"] = job_id
     if date:
         try:
             from datetime import datetime, timedelta
@@ -374,19 +383,24 @@ async def reset_candidate_session(org_id: str = Depends(get_context_organization
 
 
 @router.get("/final")
-async def get_final_candidates(org_id: str = Depends(get_context_organization_id)):
+async def get_final_candidates(job_id: str = None, org_id: str = Depends(get_context_organization_id)):
     logger.info("Fetching final candidates with interest...")
     db = get_db()
-    cursor = db.candidates.find({"interest": "interested", "organization_id": org_id}).sort("created_at", -1)
+    query = {"interest": "interested", "organization_id": org_id}
+    if job_id:
+        query["job_id"] = job_id
+    cursor = db.candidates.find(query).sort("created_at", -1)
     candidates = await cursor.to_list(length=100)
     
     results = [format_candidate_response(c) for c in candidates]
     return results
 
 @router.get("/export/candidates")
-async def export_candidates(date: str = None, org_id: str = Depends(get_context_organization_id)):
+async def export_candidates(date: str = None, job_id: str = None, org_id: str = Depends(get_context_organization_id)):
     db = get_db()
     query = {"organization_id": org_id}
+    if job_id:
+        query["job_id"] = job_id
     if date:
         try:
             from datetime import datetime, timedelta

@@ -151,6 +151,7 @@ export interface Candidate {
   shortlisted: boolean;
   email_sent: boolean;
   interest?: string;
+  job_id?: string;
 
   
   // New AI Interaction Fields

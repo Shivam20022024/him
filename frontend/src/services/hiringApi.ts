@@ -120,7 +120,7 @@ export const hiringApi = {
     return data;
   },
 
-  async getCandidates(filter: CandidateFilter, date?: string): Promise<CandidateResponse> {
+  async getCandidates(filter: CandidateFilter, date?: string, jobId?: string): Promise<CandidateResponse> {
     try {
       let endpoint = '/candidates';
       if (filter === 'interested') {
@@ -128,8 +128,14 @@ export const hiringApi = {
       } else if (filter === 'shortlisted') {
         endpoint = '/shortlisted';
       }
-      if (date) {
-        endpoint += `?date=${date}`;
+      
+      const queryParams = new URLSearchParams();
+      if (date) queryParams.append('date', date);
+      if (jobId) queryParams.append('job_id', jobId);
+      
+      const queryString = queryParams.toString();
+      if (queryString) {
+        endpoint += `?${queryString}`;
       }
 
       const { data } = await hiringClient.get<any[]>(endpoint);
@@ -151,7 +157,7 @@ export const hiringApi = {
     }
   },
 
-  async uploadResume(file: File, jobDescription: string, jobDescriptionFile?: File | null, skipAi: boolean = false): Promise<{ candidate: Candidate; source: DataSource }> {
+  async uploadResume(file: File, jobDescription: string, jobDescriptionFile?: File | null, skipAi: boolean = false, jobId?: string): Promise<{ candidate: Candidate; source: DataSource }> {
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -160,6 +166,9 @@ export const hiringApi = {
         formData.append('jd_file', jobDescriptionFile);
       }
       formData.append('skip_ai', skipAi.toString());
+      if (jobId) {
+        formData.append('job_id', jobId);
+      }
 
       const { data } = await hiringClient.post<ResumeAnalysisResponse>('/upload-resume', formData);
       return { candidate: normalizeResumeResponse(data), source: 'api' };
@@ -168,7 +177,7 @@ export const hiringApi = {
     }
   },
 
-  async addManualCandidate(candidateData: { name: string; email: string; phone: string; skills: string[]; role?: string }): Promise<{ candidate: Candidate; source: DataSource }> {
+  async addManualCandidate(candidateData: { name: string; email: string; phone: string; skills: string[]; role?: string; job_id?: string }): Promise<{ candidate: Candidate; source: DataSource }> {
     try {
       const { data } = await hiringClient.post<ResumeAnalysisResponse>('/add-manual', candidateData);
       return { candidate: normalizeResumeResponse(data), source: 'api' };
@@ -237,9 +246,14 @@ export const hiringApi = {
     }
   },
 
-  async downloadExcel(type: 'candidates' | 'calls', date?: string): Promise<void> {
+  async downloadExcel(type: 'candidates' | 'calls', date?: string, jobId?: string): Promise<void> {
     try {
-      const url = date ? `/export/${type}?date=${date}` : `/export/${type}`;
+      const queryParams = new URLSearchParams();
+      if (date) queryParams.append('date', date);
+      if (jobId) queryParams.append('job_id', jobId);
+      
+      const queryString = queryParams.toString();
+      const url = queryString ? `/export/${type}?${queryString}` : `/export/${type}`;
       const response = await hiringClient.get(url, {
         responseType: 'blob'
       });

@@ -44,10 +44,12 @@ const Hiring: React.FC = () => {
   const pipelineRef = useRef<HTMLDivElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
+  const activeJobId = new URLSearchParams(window.location.search).get('jobId') || undefined;
+
   const loadCandidates = async (silent = false, dateToLoad?: string) => {
     if (!silent) setLoading(true);
     try {
-      const response = await hiringApi.getCandidates('all', dateToLoad || selectedDate);
+      const response = await hiringApi.getCandidates('all', dateToLoad || selectedDate, activeJobId);
       // Only show candidates in the pipeline if they are from the live API
       if (response.source === 'api') {
         setCandidates(response.candidates);
@@ -153,7 +155,7 @@ const Hiring: React.FC = () => {
     try {
       const results = await Promise.allSettled(
         files.map(async (file) => {
-          const response = await hiringApi.uploadResume(file, jobDescription, jobDescriptionFile, skipAi);
+          const response = await hiringApi.uploadResume(file, jobDescription, jobDescriptionFile, skipAi, activeJobId);
           setCandidates((current) => [response.candidate, ...current]);
 
           setActivities((current) =>
@@ -213,7 +215,7 @@ const Hiring: React.FC = () => {
   const handleManualAdd = async (candidateData: { name: string; email: string; phone: string; skills: string[]; role?: string }) => {
     setUploading(true);
     try {
-      const response = await hiringApi.addManualCandidate(candidateData);
+      const response = await hiringApi.addManualCandidate({ ...candidateData, job_id: activeJobId });
       setCandidates((current) => [response.candidate, ...current]);
       
       setActivities((current) =>
@@ -503,7 +505,7 @@ const Hiring: React.FC = () => {
           onStartOutreachAll={handleStartCallingAll}
           onSendEmails={handleSendEmails}
           onViewResults={scrollToResults}
-          onDownloadCandidates={() => hiringApi.downloadExcel('candidates', selectedDate)}
+          onDownloadCandidates={() => hiringApi.downloadExcel('candidates', selectedDate, activeJobId)}
           onDownloadCalls={() => hiringApi.downloadExcel('calls', selectedDate)}
         />
 
