@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from fastapi.responses import FileResponse
 from app.core.database import get_db
 from app.api.deps import get_context_organization_id
+from app.api.routes.resume_routes import format_candidate_response
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Analytics"])
@@ -97,6 +98,10 @@ def get_base_pipeline(metric: str):
         return {"$cond": [{"$eq": ["$status", "hired"]}, 1, 0]}
     if metric == "callbacks":
         return {"$cond": [{"$eq": ["$status", "callback_required"]}, 1, 0]}
+    if metric == "selected":
+        return {"$cond": [{"$in": ["$status", ["selected", "hired"]]}, 1, 0]}
+    if metric == "not_interested":
+        return {"$cond": [{"$in": ["$status", ["not_interested", "rejected"]]}, 1, 0]}
     return 0
 
 @router.get("/dashboard")
@@ -128,6 +133,8 @@ async def get_dashboard_metrics(
                 "interested": {"$sum": get_base_pipeline("interested")},
                 "callback_required": {"$sum": get_base_pipeline("callbacks")},
                 "interviews": {"$sum": get_base_pipeline("interviews")},
+                "selected": {"$sum": get_base_pipeline("selected")},
+                "not_interested": {"$sum": get_base_pipeline("not_interested")},
                 "hired": {"$sum": get_base_pipeline("hired")}
             }}
         ]
@@ -137,7 +144,8 @@ async def get_dashboard_metrics(
             return res[0]
         return {
             "total_candidates": 0, "screened": 0, "calls_completed": 0, 
-            "interested": 0, "callback_required": 0, "interviews": 0, "hired": 0
+            "interested": 0, "callback_required": 0, "interviews": 0, 
+            "selected": 0, "not_interested": 0, "hired": 0
         }
 
     current = await fetch_metrics(current_date_query)
@@ -154,6 +162,26 @@ async def get_dashboard_metrics(
         "previous": previous,
         "trends": {k: calc_pct(current[k], previous[k]) for k in current.keys()}
     }
+
+@router.get("/candidates")
+async def get_analytics_candidates(
+    job_id: Optional[str] = None,
+    date_range: str = "this_month",
+    custom_start: Optional[str] = None,
+    custom_end: Optional[str] = None,
+    org_id: str = Depends(get_context_organization_id)
+):
+    db = get_db()
+    current_date_query, _ = get_date_ranges(date_range, custom_start, custom_end)
+    match = {"organization_id": org_id}
+    if job_id:
+        match["job_id"] = job_id
+    if current_date_query:
+        match["created_at"] = current_date_query
+
+    cursor = db.candidates.find(match).sort("created_at", -1)
+    candidates = await cursor.to_list(length=1000)
+    return [format_candidate_response(c) for c in candidates]
 
 @router.get("/funnel")
 async def get_funnel_metrics(
@@ -212,6 +240,8 @@ async def get_role_metrics(
             "interested": {"$sum": get_base_pipeline("interested")},
             "callbacks": {"$sum": get_base_pipeline("callbacks")},
             "interviews": {"$sum": get_base_pipeline("interviews")},
+            "selected": {"$sum": get_base_pipeline("selected")},
+            "not_interested": {"$sum": get_base_pipeline("not_interested")},
             "hired": {"$sum": get_base_pipeline("hired")}
         }}
     ]
@@ -236,6 +266,8 @@ async def get_role_metrics(
             "interested": r["interested"],
             "callbacks": r["callbacks"],
             "interviews": r["interviews"],
+            "selected": r.get("selected", 0),
+            "not_interested": r.get("not_interested", 0),
             "hired": r["hired"]
         })
         
@@ -316,6 +348,8 @@ async def get_report_data(
             "interested": {"$sum": get_base_pipeline("interested")},
             "callbacks": {"$sum": get_base_pipeline("callbacks")},
             "interviews": {"$sum": get_base_pipeline("interviews")},
+            "selected": {"$sum": get_base_pipeline("selected")},
+            "not_interested": {"$sum": get_base_pipeline("not_interested")},
             "hired": {"$sum": get_base_pipeline("hired")}
         }},
         {"$sort": {"_id": -1}} # newest first
@@ -404,3 +438,64 @@ async def export_analytics(
         
     filename = f"hireonomous_report_{report_type}.{format}"
     return FileResponse(path=temp_path, filename=filename, media_type=media_type)
+
+@router.get("/callbacks")
+async def get_callback_analytics(
+    job_id: Optional[str] = None,
+    org_id: str = Depends(get_context_organization_id)
+):
+    db = get_db()
+    match = {"organization_id": org_id, "status": "callback_required"}
+    if job_id:
+        match["job_id"] = job_id
+        
+    cursor = db.candidates.find(match).sort("created_at", -1).limit(10)
+    upcoming_callbacks = await cursor.to_list(length=10)
+    
+    return [format_candidate_response(c) for c in upcoming_callbacks]
+
+@router.get("/ai-screening")
+async def get_ai_screening_analytics(
+    job_id: Optional[str] = None,
+    date_range: str = "this_month",
+    custom_start: Optional[str] = None,
+    custom_end: Optional[str] = None,
+    org_id: str = Depends(get_context_organization_id)
+):
+    db = get_db()
+    current_date_query, _ = get_date_ranges(date_range, custom_start, custom_end)
+    match = {"organization_id": org_id}
+    if job_id:
+        match["job_id"] = job_id
+    if current_date_query:
+        match["created_at"] = current_date_query
+        
+    pipeline = [
+        {"$match": match},
+        {"$project": {
+            "score": {"$ifNull": ["$screening_score", "$resume_score"]}
+        }},
+        {"$match": {"score": {"$gt": 0}}},
+        {"$group": {
+            "_id": None,
+            "total_screened": {"$sum": 1},
+            "avg_score": {"$avg": "$score"},
+            "high_match": {"$sum": {"$cond": [{"$gte": ["$score", 80]}, 1, 0]}},
+            "medium_match": {"$sum": {"$cond": [{"$and": [{"$gte": ["$score", 60]}, {"$lt": ["$score", 80]}]}, 1, 0]}},
+            "low_match": {"$sum": {"$cond": [{"$lt": ["$score", 60]}, 1, 0]}}
+        }}
+    ]
+    
+    res = await db.candidates.aggregate(pipeline).to_list(1)
+    if res:
+        res[0].pop("_id", None)
+        res[0]["avg_score"] = round(res[0]["avg_score"], 1)
+        return res[0]
+        
+    return {
+        "total_screened": 0,
+        "avg_score": 0,
+        "high_match": 0,
+        "medium_match": 0,
+        "low_match": 0
+    }

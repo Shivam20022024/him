@@ -120,6 +120,15 @@ export const hiringApi = {
     return data;
   },
 
+  async deleteJob(jobId: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const { data } = await hiringClient.delete(`/job/${jobId}`);
+      return { success: true, message: data.message };
+    } catch (error) {
+      return { success: false, message: extractApiErrorMessage(error) };
+    }
+  },
+
   async getCandidates(filter: CandidateFilter, date?: string, jobId?: string): Promise<CandidateResponse> {
     try {
       let endpoint = '/candidates';
@@ -282,6 +291,18 @@ export const hiringApi = {
     }
   },
 
+  async getAnalyticsCandidates(dateRange: string = 'this_month', jobId?: string): Promise<Candidate[]> {
+    try {
+      const query = new URLSearchParams({ date_range: dateRange });
+      if (jobId) query.append('job_id', jobId);
+      const { data } = await hiringClient.get<any[]>(`/analytics/candidates?${query}`);
+      return data.map(normalizeResumeResponse);
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  },
+
   async getFunnelMetrics(dateRange: string = 'this_month', jobId?: string) {
     try {
       const query = new URLSearchParams({ date_range: dateRange });
@@ -325,6 +346,30 @@ export const hiringApi = {
     } catch (e) {
       console.error(e);
       return [];
+    }
+  },
+
+  async getCallbackAnalytics(jobId?: string) {
+    try {
+      const query = new URLSearchParams();
+      if (jobId) query.append('job_id', jobId);
+      const { data } = await hiringClient.get(`/analytics/callbacks?${query}`);
+      return data;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  },
+
+  async getAiScreeningAnalytics(dateRange: string = 'this_month', jobId?: string) {
+    try {
+      const query = new URLSearchParams({ date_range: dateRange });
+      if (jobId) query.append('job_id', jobId);
+      const { data } = await hiringClient.get(`/analytics/ai-screening?${query}`);
+      return data;
+    } catch (e) {
+      console.error(e);
+      return null;
     }
   },
 
