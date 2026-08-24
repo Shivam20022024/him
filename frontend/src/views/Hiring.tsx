@@ -520,8 +520,8 @@ const Hiring: React.FC = () => {
             <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-950">Add Profiles</h3>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Add Profiles</h3>
+                  <p className="mt-1 text-sm font-medium text-slate-600">
                     Upload a resume and generate a shortlist-ready profile from your hiring brief.
                   </p>
                 </div>
@@ -556,8 +556,8 @@ const Hiring: React.FC = () => {
                     <Users className="h-3 w-3" />
                     Real-time Pipeline
                   </div>
-                  <h2 className="text-[17px] font-bold text-slate-900 tracking-tight">Uploaded Candidates</h2>
-                  <p className="mt-1 text-[13px] font-medium text-slate-500">
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Uploaded Candidates</h2>
+                  <p className="mt-1 text-sm font-medium text-slate-600">
                     Manage resumes you've uploaded and track their screening progress.
                   </p>
                 </div>
