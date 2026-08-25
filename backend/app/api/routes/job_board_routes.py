@@ -20,6 +20,14 @@ class JobCreateRequest(BaseModel):
     location: str = ""
     jobType: str = ""
 
+class JobUpdateRequest(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    skills: List[str] | None = None
+    experience: str | None = None
+    location: str | None = None
+    jobType: str | None = None
+
 @router.post("/job")
 async def create_job(request: JobCreateRequest, org_id: str = Depends(get_context_organization_id)):
     db = get_db()
@@ -75,6 +83,23 @@ async def get_job(job_id: str, org_id: str = Depends(get_context_organization_id
         raise HTTPException(status_code=404, detail="Job not found")
     job.pop('_id', None)
     return job
+
+@router.put("/job/{job_id}")
+async def update_job(job_id: str, request: JobUpdateRequest, org_id: str = Depends(get_context_organization_id)):
+    db = get_db()
+    update_data = {k: v for k, v in request.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    result = await db.jobs_board.update_one(
+        {"id": job_id, "organization_id": org_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Job not found")
+        
+    return {"status": "success", "message": "Job updated successfully"}
 
 @router.delete("/job/{job_id}")
 async def delete_job(job_id: str, org_id: str = Depends(get_context_organization_id)):

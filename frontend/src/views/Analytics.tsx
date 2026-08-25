@@ -272,9 +272,9 @@ const Analytics: React.FC = () => {
         {/* --- TREND & ROLE PERF --- */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col items-start gap-4 mb-6">
               <h3 className="text-lg font-black text-slate-900 tracking-tight">Recruitment Activity</h3>
-              <div className="flex bg-slate-100 p-1 rounded-lg">
+              <div className="flex flex-wrap bg-slate-100 p-1 rounded-lg w-full sm:w-auto">
                 {['candidates', 'screened', 'calls', 'interviews', 'hired'].map(tab => (
                   <button 
                     key={tab}
@@ -323,7 +323,7 @@ const Analytics: React.FC = () => {
                          <span className="font-bold text-slate-900">{role.role}</span>
                          <span className="text-xs font-bold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">{role.candidates} candidates</span>
                        </div>
-                       <div className="flex gap-4 text-xs font-semibold text-slate-600 mt-3">
+                       <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-600 mt-3">
                          <div className="flex items-center gap-1"><BrainCircuit size={12} className="text-blue-500"/> {role.screened} Screened</div>
                          <div className="flex items-center gap-1"><Heart size={12} className="text-pink-500"/> {role.interested} Interested</div>
                          <div className="flex items-center gap-1"><Calendar size={12} className="text-indigo-500"/> {role.interviews} Interviews</div>
@@ -488,22 +488,7 @@ const Analytics: React.FC = () => {
           </div>
         </div>
 
-        {/* --- MONTHLY REPORT --- */}
-        <div className="bg-blue-600 p-8 rounded-2xl shadow-lg text-white flex flex-col md:flex-row justify-between items-center gap-6">
-          <div>
-            <h3 className="text-2xl font-black tracking-tight mb-2">Period Summary</h3>
-            <p className="text-blue-100 font-medium max-w-xl">
-              In this period, you received <strong className="text-white">{current.total_candidates}</strong> candidates and successfully screened <strong className="text-white">{current.screened}</strong>. 
-              The AI identified <strong className="text-white">{current.interested}</strong> interested candidates, leading to <strong className="text-white">{current.interviews}</strong> interviews and <strong className="text-white">{current.hired}</strong> hires.
-            </p>
-          </div>
-          <div className="flex gap-4 shrink-0">
-            <div className="bg-blue-500/50 p-4 rounded-xl border border-blue-400/50">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-200 block mb-1">Hiring Rate</span>
-              <span className="text-3xl font-black text-white">{hiringRate}%</span>
-            </div>
-          </div>
-        </div>
+
 
       </div>
     </div>

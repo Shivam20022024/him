@@ -142,6 +142,15 @@ export const hiringApi = {
     return data;
   },
 
+  async updateJob(jobId: string, jobData: Partial<Job>): Promise<{ success: boolean; message?: string }> {
+    try {
+      const { data } = await hiringClient.put(`/job/${jobId}`, jobData);
+      return { success: true, message: data.message };
+    } catch (error) {
+      return { success: false, message: extractApiErrorMessage(error) };
+    }
+  },
+
   async getJobById(jobId: string): Promise<Job> {
     const { data } = await hiringClient.get<Job>(`/job/${jobId}`);
     return data;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Briefcase, Plus, Calendar, ChevronRight, Loader2, MapPin, Clock, Award, Trash2 } from 'lucide-react';
+import { Briefcase, Plus, Calendar, ChevronRight, Loader2, MapPin, Clock, Award, Trash2, Search, Edit2 } from 'lucide-react';
 import { Job } from '../types';
 import { hiringApi } from '../services/hiringApi';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +12,9 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingJobId, setEditingJobId] = useState<string | null>(null);
   const [newJob, setNewJob] = useState({ 
     title: '', 
     description: '', 
@@ -85,21 +87,53 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
     setCreating(true);
     try {
       const skillsArray = newJob.skills.split(',').map(s => s.trim()).filter(Boolean);
-      const createdJob = await hiringApi.createJob({
-        title: newJob.title,
-        description: newJob.description,
-        skills: skillsArray,
-        experience: newJob.experience,
-        location: newJob.location,
-        jobType: newJob.jobType
-      });
       
-      // Auto-redirect to hiring flow
-      handleStartHiring(createdJob.id);
+      if (editingJobId) {
+        await hiringApi.updateJob(editingJobId, {
+          title: newJob.title,
+          description: newJob.description,
+          skills: skillsArray,
+          experience: newJob.experience,
+          location: newJob.location,
+          jobType: newJob.jobType
+        });
+        
+        setShowAddForm(false);
+        setEditingJobId(null);
+        setNewJob({ title: '', description: '', skills: '', experience: '0-2 years', location: '', jobType: 'Full-time' });
+        loadJobs();
+      } else {
+        const createdJob = await hiringApi.createJob({
+          title: newJob.title,
+          description: newJob.description,
+          skills: skillsArray,
+          experience: newJob.experience,
+          location: newJob.location,
+          jobType: newJob.jobType
+        });
+        
+        handleStartHiring(createdJob.id);
+      }
     } catch (error) {
-      console.error("Failed to create job", error);
+      console.error("Failed to save job", error);
+    } finally {
       setCreating(false);
     }
+  };
+
+  const handleEditJobClick = (job: Job, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingJobId(job.id);
+    setNewJob({
+      title: job.title || '',
+      description: job.description || '',
+      skills: job.skills ? job.skills.join(', ') : '',
+      experience: job.experience || '0-2 years',
+      location: job.location || '',
+      jobType: job.jobType || 'Full-time'
+    });
+    setShowAddForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -112,17 +146,36 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
               Start by creating a job to automatically find the best candidates using AI.
             </p>
           </div>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md active:scale-95"
-          >
-            {showAddForm ? 'Cancel' : <><Plus className="h-4 w-4" /> Create New Job</>}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search jobs by title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+              />
+            </div>
+            <button
+              onClick={() => {
+                const nextState = !showAddForm;
+                setShowAddForm(nextState);
+                if (!nextState) {
+                  setEditingJobId(null);
+                  setNewJob({ title: '', description: '', skills: '', experience: '0-2 years', location: '', jobType: 'Full-time' });
+                }
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md active:scale-95 whitespace-nowrap"
+            >
+              {showAddForm ? 'Cancel' : <><Plus className="h-4 w-4" /> Create New Job</>}
+            </button>
+          </div>
         </div>
 
         {showAddForm && (
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm animate-in fade-in slide-in-from-top-4 duration-200">
-            <h2 className="text-base font-semibold text-slate-900 mb-3">Job Details</h2>
+            <h2 className="text-base font-semibold text-slate-900 mb-3">{editingJobId ? 'Edit Job Details' : 'Job Details'}</h2>
             <form onSubmit={handleCreateJob} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
@@ -205,7 +258,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                   className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Briefcase className="h-4 w-4" />}
-                  Create & Start Hiring
+                  {editingJobId ? 'Update Job' : 'Create & Start Hiring'}
                 </button>
               </div>
             </form>
@@ -236,7 +289,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
             )}
 
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {jobs.map(job => (
+            {jobs.filter(j => j.title.toLowerCase().includes(searchQuery.toLowerCase())).map(job => (
               <div 
                 key={job.id} 
                 className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-blue-300 hover:shadow-md cursor-pointer"
@@ -247,18 +300,27 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                     <h3 className="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-700 transition-colors">
                       {job.title}
                     </h3>
-                    <button
-                      onClick={(e) => handleDeleteJob(job, e)}
-                      disabled={deletingJobId === job.id}
-                      title="Delete job"
-                      className="shrink-0 rounded-lg p-1.5 text-slate-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 disabled:opacity-50"
-                    >
-                      {deletingJobId === job.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => handleEditJobClick(job, e)}
+                        title="Edit job"
+                        className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-blue-50 hover:text-blue-600"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteJob(job, e)}
+                        disabled={deletingJobId === job.id}
+                        title="Delete job"
+                        className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                      >
+                        {deletingJobId === job.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium text-slate-500">
