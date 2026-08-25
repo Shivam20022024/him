@@ -28,7 +28,7 @@ const Sidebar = () => {
           </div>
           <div className="flex flex-col">
             <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Hireonomous</h1>
-            <span className="text-xs font-medium text-slate-500 tracking-wide mt-0.5">Find the right talent, faster.</span>
+            <span className="text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent tracking-wide mt-0.5">Find the right talent, faster.</span>
           </div>
         </div>
 
