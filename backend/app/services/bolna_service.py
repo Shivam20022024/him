@@ -406,7 +406,7 @@ class BolnaService:
             needs_fallback = False
             if (update_doc.get("communication_score") is None or 
                 update_doc.get("interest") is None or
-                update_doc.get("total_experience") is None or
+                str(update_doc.get("total_experience", "")).lower() in ["", "not available", "none", "n/a"] or
                 update_doc.get("technical_score") is None or
                 update_doc.get("confidence_score") is None):
                 needs_fallback = True
@@ -416,19 +416,24 @@ class BolnaService:
                 llm_data = await BolnaService.extract_metrics_with_llm(transcript)
                 
                 if llm_data:
-                    update_doc["communication_score"] = update_doc.get("communication_score") or llm_data.get("communication_score")
-                    update_doc["technical_score"] = update_doc.get("technical_score") or llm_data.get("technical_score")
-                    update_doc["confidence_score"] = update_doc.get("confidence_score") or llm_data.get("confidence_score")
-                    update_doc["screening_score"] = update_doc.get("screening_score") or llm_data.get("match_score")
-                    update_doc["final_recommendation"] = update_doc.get("final_recommendation") or llm_data.get("final_recommendation")
+                    def get_valid(existing, new_val):
+                        if existing is None or str(existing).strip().lower() in ["", "not available", "none", "n/a", "null"]:
+                            return new_val
+                        return existing
+
+                    update_doc["communication_score"] = get_valid(update_doc.get("communication_score"), llm_data.get("communication_score"))
+                    update_doc["technical_score"] = get_valid(update_doc.get("technical_score"), llm_data.get("technical_score"))
+                    update_doc["confidence_score"] = get_valid(update_doc.get("confidence_score"), llm_data.get("confidence_score"))
+                    update_doc["screening_score"] = get_valid(update_doc.get("screening_score"), llm_data.get("match_score"))
+                    update_doc["final_recommendation"] = get_valid(update_doc.get("final_recommendation"), llm_data.get("final_recommendation"))
                     
-                    update_doc["total_experience"] = update_doc.get("total_experience") or llm_data.get("total_experience")
-                    update_doc["relevant_experience"] = update_doc.get("relevant_experience") or llm_data.get("relevant_experience")
-                    update_doc["employment_status"] = update_doc.get("employment_status") or llm_data.get("employment_status")
-                    update_doc["joining_availability"] = update_doc.get("joining_availability") or llm_data.get("joining_availability")
-                    update_doc["interview_availability"] = update_doc.get("interview_availability") or llm_data.get("interview_availability")
+                    update_doc["total_experience"] = get_valid(update_doc.get("total_experience"), llm_data.get("total_experience"))
+                    update_doc["relevant_experience"] = get_valid(update_doc.get("relevant_experience"), llm_data.get("relevant_experience"))
+                    update_doc["employment_status"] = get_valid(update_doc.get("employment_status"), llm_data.get("employment_status"))
+                    update_doc["joining_availability"] = get_valid(update_doc.get("joining_availability"), llm_data.get("joining_availability"))
+                    update_doc["interview_availability"] = get_valid(update_doc.get("interview_availability"), llm_data.get("interview_availability"))
                     
-                    if not update_doc.get("interest"):
+                    if get_valid(update_doc.get("interest"), None) is None:
                         interest = llm_data.get("interest", "").lower()
                         if interest:
                             update_doc["interest"] = interest
