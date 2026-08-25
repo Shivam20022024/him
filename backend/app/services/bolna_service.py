@@ -146,7 +146,7 @@ class BolnaService:
             "technical_score": 80, (0-100)
             "confidence_score": 90, (0-100)
             "match_score": 82, (0-100)
-            "interest": "interested", (strictly "interested", "not_interested", or "callback_required". Use "callback_required" ONLY if they are busy/unavailable to talk right now and ask to be called later. Do NOT use it if they are simply stating their availability for an interview.)
+            "interest": "interested", (strictly "interested", "not_interested", or "callback_required". Use "callback_required" if they ask to be called later, OR if the call was abruptly cut off/disconnected in the middle before they finished answering the core questions. Do NOT use "callback_required" if they are simply stating their availability for an interview.)
             "final_recommendation": "Strong candidate, recommended for next round.",
             "total_experience": "3 years",
             "relevant_experience": "2 years",
@@ -433,12 +433,12 @@ class BolnaService:
                     update_doc["joining_availability"] = get_valid(update_doc.get("joining_availability"), llm_data.get("joining_availability"))
                     update_doc["interview_availability"] = get_valid(update_doc.get("interview_availability"), llm_data.get("interview_availability"))
                     
-                    if get_valid(update_doc.get("interest"), None) is None:
-                        interest = llm_data.get("interest", "").lower()
-                        if interest:
-                            update_doc["interest"] = interest
-                            update_doc["status"] = interest
-                            update_doc["interest_status"] = interest
+                    llm_interest = llm_data.get("interest", "").lower()
+                    if get_valid(update_doc.get("interest"), None) is None or llm_interest == "callback_required":
+                        if llm_interest:
+                            update_doc["interest"] = llm_interest
+                            update_doc["status"] = llm_interest
+                            update_doc["interest_status"] = llm_interest
 
         # Final DB update
         await db.candidates.update_one(
