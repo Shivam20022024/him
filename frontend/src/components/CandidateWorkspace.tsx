@@ -144,7 +144,6 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidateGroup,
                     <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-slate-600">
                       <span className="flex items-center gap-1.5"><Mail size={14} className="text-slate-400" /> {candidateGroup.email || 'Not Available'}</span>
                       <span className="flex items-center gap-1.5"><Phone size={14} className="text-slate-400" /> {candidateGroup.phone || 'Not Available'}</span>
-                      <span className="flex items-center gap-1.5"><Briefcase size={14} className="text-slate-400" /> Experience: {candidateGroup.totalExperience || 'Not Available'}</span>
                     </div>
                   </div>
                 </div>
