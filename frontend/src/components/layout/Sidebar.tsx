@@ -1,15 +1,17 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   Briefcase, 
   Users, 
   LineChart, 
-  BrainCircuit 
+  BrainCircuit,
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const navItems = [
     { label: 'Jobs', path: '/jobs', icon: <Briefcase size={22} /> },
     { label: 'Hiring', path: '/hiring', icon: <Users size={22} /> },
@@ -54,14 +56,24 @@ const Sidebar = () => {
 
         {/* User Profile Bottom */}
         <div className="mt-auto pt-6 border-t border-slate-100">
-          <div className="flex items-center gap-3 rounded-xl px-2 py-3 hover:bg-slate-50 cursor-pointer transition-colors">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-bold text-white shadow-sm uppercase">
+          <div className="flex items-center gap-3 rounded-xl px-2 py-3 hover:bg-slate-50 transition-colors">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-bold text-white shadow-sm uppercase shrink-0">
               {user?.name?.substring(0, 2) || 'US'}
             </div>
-            <div className="flex flex-col truncate">
+            <div className="flex flex-col truncate flex-1">
               <span className="text-base font-black text-slate-900 tracking-tight truncate">{user?.name || 'User'}</span>
               <span className="text-sm font-semibold text-slate-700 truncate">{user?.email || 'user@example.com'}</span>
             </div>
+            <button 
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+              title="Logout"
+            >
+              <LogOut size={20} />
+            </button>
           </div>
         </div>
       </div>

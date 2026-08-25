@@ -6,6 +6,8 @@ export interface User {
   role: string;
   org_id: string | null;
   organization_name?: string | null;
+  name?: string;
+  email?: string;
 }
 
 interface AuthContextType {
@@ -58,8 +60,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
             if (res.ok) {
               const fullUser = await res.json();
-              if (fullUser.organization_name) {
-                setUser(prev => prev ? { ...prev, organization_name: fullUser.organization_name } : prev);
+              if (fullUser) {
+                setUser(prev => prev ? { 
+                  ...prev, 
+                  organization_name: fullUser.organization_name,
+                  name: fullUser.name,
+                  email: fullUser.email
+                } : prev);
               }
             }
           } catch (err) {
