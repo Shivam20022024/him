@@ -24,7 +24,7 @@ const Login: React.FC = () => {
       formData.append('username', email);
       formData.append('password', password);
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+      const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:8001';
       
       const response = await axios.post(`${API_URL}/api/auth/login`, formData, {
         headers: {

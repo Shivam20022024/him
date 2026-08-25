@@ -8,7 +8,7 @@ const Overview: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+  const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:8001';
 
   useEffect(() => {
     const fetchStats = async () => {

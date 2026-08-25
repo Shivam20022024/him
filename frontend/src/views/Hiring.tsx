@@ -469,7 +469,7 @@ const Hiring: React.FC = () => {
 
     if (result.success) {
       // Create live activity entries for email outreach
-      const newActivities: ActivityItem[] = aiQualifiedCandidates.map((candidate) => ({
+      const newActivities: any[] = aiQualifiedCandidates.map((candidate) => ({
         id: `${Date.now()}-${candidate.id}-mail`,
         candidateName: candidate.name,
         type: 'mail_sent',
