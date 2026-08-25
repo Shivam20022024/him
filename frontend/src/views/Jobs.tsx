@@ -167,10 +167,10 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                   setNewJob({ title: '', description: '', skills: '', experience: '0-2 years', location: '', jobType: 'Full-time' });
                 }
               }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md active:scale-95 whitespace-nowrap"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#003d9b] px-5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#003d9b]/90 active:scale-95 whitespace-nowrap"
             >
               <Plus className="h-5 w-5" />
-              {showAddForm ? 'Cancel' : 'Create New Job'}
+              {showAddForm ? 'Cancel' : 'Create new job'}
             </button>
           </div>
         </div>
