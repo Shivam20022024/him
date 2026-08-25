@@ -69,7 +69,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               variant="outline"
               size="lg"
               className="w-full sm:w-auto px-8 py-4 rounded-xl border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all duration-300"
-              onClick={() => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank')}
+              onClick={() => window.open('https://novalantis.com/products/oneclick-hire/', '_blank')}
             >
               <Play size={18} className="mr-2" />
               Watch Demo
