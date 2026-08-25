@@ -125,22 +125,6 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidateGroup,
               </>
             )}
           </div>
-          {activeApp && (
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => onCallCandidate?.(activeApp)}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
-              >
-                Call Candidate
-              </button>
-              <button 
-                onClick={() => onStatusChange?.(activeApp.id, 'interview_scheduled')}
-                className="rounded-lg bg-slate-900 text-white px-4 py-2 text-sm font-bold hover:bg-slate-800 transition-colors shadow-sm"
-              >
-                Schedule Interview
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Main Content Area */}
