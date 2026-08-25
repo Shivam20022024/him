@@ -14,6 +14,12 @@ logger = logging.getLogger(__name__)
 class ForgotPasswordRequest(BaseModel):
     email: str
 
+class RequestAccessRequest(BaseModel):
+    name: str
+    email: str
+    company: str
+    role: str
+
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
@@ -120,6 +126,29 @@ async def reset_password(request: ResetPasswordRequest):
     )
     
     return {"message": "Password successfully reset. You can now log in."}
+
+@router.post("/request-access")
+async def request_access(request: RequestAccessRequest):
+    db = get_db()
+    
+    # Check if already requested or exists
+    existing = await db["users"].find_one({"email": request.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Account already exists for this email.")
+        
+    existing_request = await db["access_requests"].find_one({"email": request.email})
+    if existing_request:
+        raise HTTPException(status_code=400, detail="You have already requested access. We will be in touch soon.")
+        
+    request_data = request.dict()
+    request_data["status"] = "pending"
+    request_data["created_at"] = datetime.utcnow()
+    
+    await db["access_requests"].insert_one(request_data)
+    
+    logger.info(f"New access request received from {request.name} ({request.email}) at {request.company}")
+    
+    return {"message": "Request received successfully. We will review and grant access soon."}
 
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user = Depends(get_current_active_user)):

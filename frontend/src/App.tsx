@@ -13,6 +13,7 @@ import Analytics from "./views/Analytics";
 import Login from "./views/auth/Login";
 import ForgotPassword from "./views/auth/ForgotPassword";
 import ResetPassword from "./views/auth/ResetPassword";
+import RequestAccess from "./views/auth/RequestAccess";
 
 // Super Admin Views
 import SuperAdminLayout from "./components/superadmin/SuperAdminLayout";
@@ -32,6 +33,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/request-access" element={<RequestAccess />} />
 
         {/* Protected Organization Routes */}
         <Route path="/dashboard" element={<Navigate to="/jobs" replace />} />

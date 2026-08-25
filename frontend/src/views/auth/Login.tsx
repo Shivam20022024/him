@@ -144,6 +144,15 @@ const Login: React.FC = () => {
             )}
           </button>
         </form>
+
+        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+          <p className="text-sm text-slate-600">
+            Don't have an account?{' '}
+            <Link to="/request-access" className="font-bold text-blue-600 hover:text-blue-500 transition-colors">
+              Request access
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
