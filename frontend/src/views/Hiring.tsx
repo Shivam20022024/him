@@ -495,7 +495,7 @@ const Hiring: React.FC = () => {
   };
 
   const scrollToResults = () => {
-    resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    pipelineRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
