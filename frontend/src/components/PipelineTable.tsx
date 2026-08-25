@@ -148,7 +148,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
               <th className="w-8 px-4 py-4"></th>
               <th className="px-6 py-4 font-bold">Candidate</th>
               <th className="px-6 py-4 font-bold">Applications</th>
-              <th className="px-6 py-4 font-bold">Experience</th>
+              <th className="px-6 py-4 font-bold">Match Score</th>
               <th className="px-6 py-4 font-bold">Latest Status</th>
               <th className="px-6 py-4 font-bold text-right">Actions</th>
             </tr>
@@ -208,8 +208,8 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-slate-600 font-medium">
-                        {group.totalExperience || 'Not Available'}
+                      <td className="px-6 py-4">
+                        {getAiScore(latestApp)}
                       </td>
                       <td className="px-6 py-4">
                         {getStatusBadge(latestApp.status, latestApp.interest)}
