@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutGrid, Building, Users, LogOut } from 'lucide-react';
+import { LayoutGrid, Building, Users, LogOut, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Sidebar: React.FC = () => {
@@ -15,6 +15,7 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { name: 'Overview', path: '/superadmin/dashboard', icon: LayoutGrid },
+    { name: 'Requests', path: '/superadmin/requests', icon: ClipboardList },
     { name: 'Companies', path: '/superadmin/companies', icon: Building },
     { name: 'Users', path: '/superadmin/users', icon: Users },
   ];

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from app.core.auth import verify_password, create_access_token
+from app.core.auth import verify_password, create_access_token, get_password_hash
 from app.models.user import UserResponse
 from app.core.database import get_db
 from app.api.deps import get_current_active_user
@@ -19,6 +19,7 @@ class RequestAccessRequest(BaseModel):
     email: str
     company: str
     role: str
+    password: str
 
 class ResetPasswordRequest(BaseModel):
     token: str
@@ -143,6 +144,10 @@ async def request_access(request: RequestAccessRequest):
     request_data = request.dict()
     request_data["status"] = "pending"
     request_data["created_at"] = datetime.utcnow()
+    
+    # Hash password before storing in request
+    raw_password = request_data.pop("password")
+    request_data["hashed_password"] = get_password_hash(raw_password)
     
     await db["access_requests"].insert_one(request_data)
     

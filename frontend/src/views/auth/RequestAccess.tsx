@@ -10,7 +10,8 @@ const RequestAccess = () => {
     name: '',
     email: '',
     company: '',
-    role: ''
+    role: '',
+    password: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -154,6 +155,22 @@ const RequestAccess = () => {
                 onChange={handleChange}
                 className="appearance-none block w-full pl-11 pr-3 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium transition-all"
                 placeholder="Head of Talent"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-bold text-slate-700 mb-1.5">Desired Password</label>
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                className="appearance-none block w-full px-3 py-3 border border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium transition-all"
+                placeholder="Create a secure password"
               />
             </div>
           </div>

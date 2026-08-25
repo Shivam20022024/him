@@ -50,6 +50,71 @@ async def get_global_stats(current_user: UserInDB = Depends(require_super_admin)
         "total_call_minutes": total_call_minutes
     }
 
+@router.get("/requests")
+async def get_access_requests(current_user: UserInDB = Depends(require_super_admin)):
+    db = get_db()
+    requests = []
+    
+    cursor = db["access_requests"].find().sort("created_at", -1)
+    async for req in cursor:
+        req["_id"] = str(req["_id"])
+        # Do not expose hashed password
+        req.pop("hashed_password", None)
+        requests.append(req)
+        
+    return requests
+
+@router.post("/requests/{req_id}/approve")
+async def approve_access_request(req_id: str, current_user: UserInDB = Depends(require_super_admin)):
+    db = get_db()
+    
+    req = await db["access_requests"].find_one({"_id": ObjectId(req_id)})
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+        
+    if req.get("status") != "pending":
+        raise HTTPException(status_code=400, detail="Request is already processed")
+        
+    # Create Organization
+    org_data = Organization(name=req["company"], status="active").dict()
+    await db["organizations"].insert_one(org_data)
+    org_id = org_data["id"]
+    
+    # Create Admin User using stored hashed password
+    user_data = UserInDB(
+        name=req["name"],
+        email=req["email"],
+        hashed_password=req["hashed_password"],
+        role="COMPANY_ADMIN",
+        organization_id=org_id,
+        status="active"
+    ).dict()
+    await db["users"].insert_one(user_data)
+    
+    # Update request status
+    await db["access_requests"].update_one(
+        {"_id": ObjectId(req_id)},
+        {"$set": {"status": "approved"}}
+    )
+    
+    return {"message": "Request approved and account created successfully"}
+
+@router.post("/requests/{req_id}/reject")
+async def reject_access_request(req_id: str, current_user: UserInDB = Depends(require_super_admin)):
+    db = get_db()
+    
+    req = await db["access_requests"].find_one({"_id": ObjectId(req_id)})
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found")
+        
+    # Update request status
+    await db["access_requests"].update_one(
+        {"_id": ObjectId(req_id)},
+        {"$set": {"status": "rejected"}}
+    )
+    
+    return {"message": "Request rejected"}
+
 @router.get("/companies")
 async def get_all_companies(current_user: UserInDB = Depends(require_super_admin)):
     db = get_db()

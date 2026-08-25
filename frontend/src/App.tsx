@@ -15,9 +15,9 @@ import ForgotPassword from "./views/auth/ForgotPassword";
 import ResetPassword from "./views/auth/ResetPassword";
 import RequestAccess from "./views/auth/RequestAccess";
 
-// Super Admin Views
 import SuperAdminLayout from "./components/superadmin/SuperAdminLayout";
 import Overview from "./views/superadmin/Overview";
+import Requests from "./views/superadmin/Requests";
 import Companies from "./views/superadmin/Companies";
 import Users from "./views/superadmin/Users";
 
@@ -79,6 +79,7 @@ function App() {
           >
             <Route index element={<Navigate to="/superadmin/dashboard" replace />} />
             <Route path="dashboard" element={<Overview />} />
+            <Route path="requests" element={<Requests />} />
             <Route path="companies" element={<Companies />} />
             <Route path="users" element={<Users />} />
           </Route>
