@@ -146,7 +146,7 @@ class BolnaService:
             "technical_score": 80, (0-100)
             "confidence_score": 90, (0-100)
             "match_score": 82, (0-100)
-            "interest": "interested", (strictly "interested", "not_interested", or "callback_required". Use "callback_required" if they are temporarily unavailable or busy and ask to be called later. Use "not_interested" ONLY for explicit rejection.)
+            "interest": "interested", (strictly "interested", "not_interested", or "callback_required". Use "callback_required" ONLY if they are busy/unavailable to talk right now and ask to be called later. Do NOT use it if they are simply stating their availability for an interview.)
             "final_recommendation": "Strong candidate, recommended for next round.",
             "total_experience": "3 years",
             "relevant_experience": "2 years",
@@ -406,6 +406,7 @@ class BolnaService:
             needs_fallback = False
             if (update_doc.get("communication_score") is None or 
                 update_doc.get("interest") is None or
+                update_doc.get("total_experience") is None or
                 update_doc.get("technical_score") is None or
                 update_doc.get("confidence_score") is None):
                 needs_fallback = True

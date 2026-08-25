@@ -77,62 +77,11 @@ INTEREST RULES
 class PromptEngine:
     @staticmethod
     async def generate_screening_questions(job_title: str, job_description: str, skills: List[str], experience: str) -> List[Dict[str, Any]]:
-        """Uses OpenAI to generate 5-7 relevant screening questions for a job."""
-        if not settings.OPENAI_API_KEY:
-            # Fallback
-            return [
-                {"question": "How many years of total work experience do you have?", "category": "Experience", "required": True, "order": 1},
-                {"question": f"What experience do you have with {skills[0] if skills else 'the required tools'}?", "category": "Technical", "required": True, "order": 2},
-                {"question": "When would you be available for an interview?", "category": "Logistics", "required": True, "order": 3},
-            ]
-
-        prompt = f"""
-        Generate 5-7 screening questions for this job.
-        Job Title: {job_title}
-        Description: {job_description}
-        Skills: {', '.join(skills)}
-        Experience: {experience}
-        
-        The questions should be natural. Include some technical, some experience-based, and logistics (availability).
-        DO NOT ask irrelevant questions (e.g., ML questions for a Sales job).
-        Return JSON list of objects with: "question", "category" (e.g. Technical, Experience, Logistics), "required" (bool).
-        """
-        
-        headers = {
-            "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "model": "gpt-4o",
-            "messages": [{"role": "user", "content": prompt}],
-            "response_format": {"type": "json_object"}
-        }
-        
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post("https://api.openai.com/v1/chat/completions", json=payload, headers=headers)
-                response.raise_for_status()
-                result = response.json()
-                content = result["choices"][0]["message"]["content"]
-                # Sometimes it wraps in a root object
-                data = json.loads(content)
-                questions = data.get("questions", data) if isinstance(data, dict) else data
-                
-                formatted_questions = []
-                for idx, q in enumerate(questions):
-                    formatted_questions.append({
-                        "question": q.get("question", ""),
-                        "category": q.get("category", "General"),
-                        "required": q.get("required", True),
-                        "order": idx + 1
-                    })
-                return formatted_questions
-        except Exception as e:
-            logger.error(f"Failed to generate questions: {e}")
-            return [
-                {"question": "How many years of total work experience do you have?", "category": "Experience", "required": True, "order": 1},
-                {"question": "When would you be available for an interview?", "category": "Logistics", "required": True, "order": 2}
-            ]
+        """Returns the strictly required screening questions for the job."""
+        return [
+            {"question": f"Are you interested in the {job_title} opportunity?", "category": "Interest", "required": True, "order": 1},
+            {"question": "How many years of total work experience do you have?", "category": "Experience", "required": True, "order": 2}
+        ]
 
     @staticmethod
     def generate_prompt(job: dict, config: dict, candidate_name: str = "the candidate", company_name: str = "Hireonomous") -> str:
