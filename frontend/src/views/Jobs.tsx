@@ -344,19 +344,14 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                   </p>
                   
                   {job.skills && job.skills.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-1.5">
-                      {job.skills.slice(0, 3).map(skill => (
-                        <span key={skill} className="inline-flex max-w-full rounded-md border border-[#6d28d9]/20 bg-[#6d28d9]/10 px-2.5 py-1 text-[11px] font-semibold text-[#6d28d9]">
-                          {skill}
-                        </span>
-                      ))}
-                      {job.skills.length > 3 && (
-                        <span className="inline-flex max-w-full rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-                          +{job.skills.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                      <div className="mt-4 flex flex-col gap-1.5">
+                        {job.skills.slice(0, 2).map(skill => (
+                          <span key={skill} className="w-full block rounded-md bg-[#f3e8ff] px-3 py-1.5 text-[11px] font-bold text-[#6d28d9]">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   
                   <div className="mt-5 pt-4 border-t border-[#e2e8f0] flex items-center justify-between">
                     <span className="flex items-center text-[11px] text-slate-500 gap-1.5">
@@ -369,7 +364,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                         e.stopPropagation();
                         handleStartHiring(job.id);
                       }}
-                      className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[11px] font-semibold border border-[#6d28d9]/25 bg-[#6d28d9]/5 text-[#6d28d9] hover:bg-[#6d28d9]/10 transition-all"
+                      className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[11px] font-semibold border border-[#6d28d9]/25 bg-transparent text-[#6d28d9] transition-all group-hover:bg-[#6d28d9] group-hover:text-white"
                     >
                       Start hiring <ChevronRight size={14} />
                     </button>
