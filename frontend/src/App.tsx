@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import MainLayout from "./components/layout/MainLayout";
 
 // Views
 import Home from "./views/Home";
@@ -24,45 +25,48 @@ function App() {
   const isSuperAdminRoute = location.pathname.startsWith('/superadmin');
 
   return (
-    <div className={`min-h-screen ${isSuperAdminRoute ? 'bg-slate-50' : 'bg-[linear-gradient(180deg,#f8fbff_0%,#eef3f8_100%)]'} text-slate-900`}>
-      {!isSuperAdminRoute && <Navbar />}
-      
-      <main className={isSuperAdminRoute ? '' : 'relative pt-28'}>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home onNavigate={() => {}} />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+    <div className={`min-h-screen ${isSuperAdminRoute ? 'bg-slate-50' : 'bg-[#f8fafc]'} text-slate-900`}>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Home onNavigate={() => {}} />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Protected Organization Routes */}
-          <Route path="/dashboard" element={<Navigate to="/jobs" replace />} />
-          <Route 
-            path="/jobs" 
-            element={
-              <ProtectedRoute>
+        {/* Protected Organization Routes */}
+        <Route path="/dashboard" element={<Navigate to="/jobs" replace />} />
+        <Route 
+          path="/jobs" 
+          element={
+            <ProtectedRoute>
+              <MainLayout>
                 <Jobs onNavigate={() => {}} />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/hiring" 
-            element={
-              <ProtectedRoute>
+              </MainLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/hiring" 
+          element={
+            <ProtectedRoute>
+              <MainLayout>
                 <Hiring />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/analytics" 
-            element={
-              <ProtectedRoute>
+              </MainLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/analytics" 
+          element={
+            <ProtectedRoute>
+              <MainLayout>
                 <Analytics />
-              </ProtectedRoute>
-            } 
-          />
+              </MainLayout>
+            </ProtectedRoute>
+          } 
+        />
 
-          {/* Protected Super Admin Routes */}
+        {/* Protected Super Admin Routes */}
           <Route 
             path="/superadmin" 
             element={
@@ -79,7 +83,6 @@ function App() {
           
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-      </main>
     </div>
   );
 }

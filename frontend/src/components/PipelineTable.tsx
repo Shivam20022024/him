@@ -127,7 +127,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
         <div className="relative w-full max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -141,7 +141,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto rounded-[20px] border border-slate-200 bg-white">
+      <div className="overflow-x-auto min-w-0 rounded-[20px] border border-slate-200 bg-white">
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
             <tr>

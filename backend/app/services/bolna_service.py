@@ -1,5 +1,8 @@
 from app.core.database import get_db
 from app.core.config import settings
+from app.services.prompt_engine import PromptEngine
+from app.models.job_ai_config import JobAIConfig
+from app.core.config import settings
 import logging
 import httpx
 from datetime import datetime
@@ -13,7 +16,7 @@ class BolnaService:
     @staticmethod
     async def initiate_bolna_call(candidate_id: str, phone_number: str, candidate_name: str = "", job_title: str = "", company_name: str = "Hireonomous"):
         """
-        Initiates an outbound call via Bolna.ai API.
+        Initiates an outbound call via Bolna.ai API with dynamic prompt generation.
         """
         agent_id = settings.BOLNA_AGENT_ID
         api_key = settings.BOLNA_API_KEY
@@ -38,16 +41,82 @@ class BolnaService:
             "Content-Type": "application/json"
         }
         
+        # Generate dynamic prompt
+        db = get_db()
+        dynamic_prompt = ""
+        job_id = ""
+        application_id = candidate_id # The parameter passed is actually the application ID in the DB
+        real_candidate_id = ""
+        prompt_version = "1.0"
+        
+        try:
+            candidate = await db.candidates.find_one({"id": application_id})
+            if candidate:
+                job_id = candidate.get("job_id", "")
+                org_id = candidate.get("organization_id", "")
+                real_candidate_id = candidate.get("candidate_id", application_id)
+                
+                job = await db.jobs_board.find_one({"id": job_id})
+                config = await db.job_ai_config.find_one({"job_id": job_id})
+                
+                if job:
+                    if not config:
+                        config = JobAIConfig(job_id=job_id, organization_id=org_id).model_dump()
+                    
+                    prompt_version = config.get("prompt_template_version", "1.0")
+                    dynamic_prompt = PromptEngine.generate_prompt(job, config, candidate_name=candidate_name, company_name=company_name)
+                    logger.info(f"Generated dynamic prompt for job {job_id}")
+                    
+                    # Save Call Snapshot
+                    snapshot = {
+                        "call_id": None, # Will update later or use execution_id if returned
+                        "candidate_id": real_candidate_id,
+                        "application_id": application_id,
+                        "job_id": job_id,
+                        "prompt_version": prompt_version,
+                        "tone": config.get("tone"),
+                        "language": config.get("language"),
+                        "voice": config.get("voice"),
+                        "screening_questions": config.get("screening_questions", []),
+                        "generated_prompt": dynamic_prompt,
+                        "created_at": datetime.utcnow().isoformat()
+                    }
+                    await db.call_snapshots.insert_one(snapshot)
+                else:
+                    logger.error(f"Job {job_id} not found for application {application_id}")
+                    return {"status": "error", "message": f"Job {job_id} not found"}
+        except Exception as e:
+            logger.error(f"Failed to generate dynamic prompt: {e}")
+            return {"status": "error", "message": "AI Recruiter configuration could not be generated."}
+
+        if not dynamic_prompt or not dynamic_prompt.strip():
+            logger.error(f"Dynamic prompt is empty for application {application_id}")
+            return {"status": "error", "message": "AI Recruiter configuration could not be generated (Empty Prompt)."}
+
         payload = {
             "agent_id": agent_id,
             "recipient_phone_number": phone_number,
             "user_data": {
-                "candidate_id": candidate_id,
+                "candidate_id": real_candidate_id,
+                "application_id": application_id,
+                "job_id": job_id,
                 "candidate_name": candidate_name,
                 "job_title": job_title,
-                "company_name": company_name
+                "company_name": company_name,
+                "dynamic_prompt": dynamic_prompt
             }
         }
+
+        # Safe debug logging immediately before HTTP request
+        logger.info(f"--- BOLNA CALL INITIATION ---")
+        logger.info(f"candidate_id: {real_candidate_id}")
+        logger.info(f"job_id: {job_id}")
+        logger.info(f"application_id: {application_id}")
+        logger.info(f"prompt_template_version: {prompt_version}")
+        logger.info(f"dynamic_prompt_present: {bool(dynamic_prompt)}")
+        logger.info(f"dynamic_prompt_length: {len(dynamic_prompt)}")
+        logger.info(f"dynamic_prompt_preview: {dynamic_prompt[:150]}...")
+        logger.info(f"-----------------------------")
 
         try:
             async with httpx.AsyncClient() as client:

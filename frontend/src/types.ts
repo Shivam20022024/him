@@ -172,6 +172,14 @@ export interface Candidate {
   last_interaction?: string;
   screening_skills?: string;
   screening_score?: number;
+  
+  total_experience?: string;
+  relevant_experience?: string;
+  employment_status?: string;
+  joining_availability?: string;
+  interview_availability?: string;
+  experience_years?: string;
+  availability?: string;
 
   // New Real Call Pipeline Fields
   communication_score?: number;

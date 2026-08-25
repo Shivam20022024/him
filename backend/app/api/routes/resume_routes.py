@@ -156,7 +156,8 @@ async def upload_resume(
                     "missing_skills": [],
                     "reason": "AI scoring bypassed.",
                     "summary": parsed_data.get("experience_summary", "AI scoring bypassed."),
-                    "role": "Not Assessed"
+                    "role": "Not Assessed",
+                    "total_experience": parsed_data.get("total_experience", "Not Assessed")
                 }
             else:
                 result = await ResumeService.process_resume(text, effective_job_description)
@@ -204,6 +205,7 @@ async def upload_resume(
             "status": "uploaded",
             "shortlisted": False,
             "role": result.get("role"),
+            "total_experience": result.get("total_experience", "Not Available"),
             "ai_summary": result.get("reason"),
             "organization_id": org_id,
             "job_id": job_id,
@@ -480,13 +482,13 @@ async def export_call_results(date: str = None, job_id: str = None, org_id: str 
             c.get("name", "N/A"),
             c.get("email", "N/A"),
             c.get("phone", "N/A"),
-            c.get("role", "N/A"),
-            c.get("screening_skills", "N/A"),
-            c.get("screening_skills", "N/A"), # Relevant exp
-            c.get("employment_status", "N/A"),
-            c.get("screening_availability", "N/A"),
-            c.get("interview_time", "N/A"),
-            c.get("interest", "N/A"),
+            c.get("role") or c.get("job_role") or "N/A",
+            c.get("total_experience") or c.get("experience_years") or "N/A",
+            c.get("relevant_experience") or "N/A",
+            c.get("employment_status") or "N/A",
+            c.get("joining_availability") or c.get("availability") or "N/A",
+            c.get("interview_availability") or c.get("interview_time") or "N/A",
+            c.get("interest_status") or c.get("interested") or c.get("interest") or "N/A",
             c.get("transcript", "N/A"),
             c.get("recording_url", "N/A"),
             c.get("created_at", datetime.now()).strftime("%Y-%m-%d %H:%M:%S") if isinstance(c.get("created_at"), datetime) else "N/A"

@@ -21,6 +21,14 @@ ENV/
 backend/temp_*
 backend/results/
 
+# Generated per-organization report exports
+backend/candidates_*.xlsx
+backend/candidate_call_results_*.xlsx
+
+# Ad hoc debug/test scripts
+backend/test_llm.py
+backend/test_openai.py
+
 # ======================
 # 🔹 Node / Frontend
 # ======================

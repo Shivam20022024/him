@@ -296,15 +296,15 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidateGroup,
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Total Experience</span>
-                            <span className="font-bold text-slate-900">{activeApp.screening_skills || 'Not Available'}</span>
+                            <span className="font-bold text-slate-900">{activeApp.total_experience || activeApp.experience_years || 'Not Available'}</span>
                           </div>
                           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Relevant Exp</span>
-                            <span className="font-bold text-slate-900">{activeApp.screening_skills || 'Not Available'}</span>
+                            <span className="font-bold text-slate-900">{activeApp.relevant_experience || 'Not Available'}</span>
                           </div>
                           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Joining</span>
-                            <span className="font-bold text-slate-900">{activeApp.screening_availability || 'Not Available'}</span>
+                            <span className="font-bold text-slate-900">{activeApp.joining_availability || activeApp.availability || 'Not Available'}</span>
                           </div>
                           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Interest</span>

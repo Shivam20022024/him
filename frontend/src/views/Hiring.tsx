@@ -11,6 +11,8 @@ import { Candidate, Job, GroupedCandidate } from '../types';
 import { hiringApi } from '../services/hiringApi';
 import InterviewModal from '../components/hiring/InterviewModal';
 import CandidateWorkspace from '../components/CandidateWorkspace';
+import AiRecruiterConfig from '../components/AiRecruiterConfig';
+import { Bot } from 'lucide-react';
 
 
 // Demo candidates removed per requirement
@@ -30,7 +32,7 @@ const Hiring: React.FC = () => {
   const [isUploadedExpanded, setIsUploadedExpanded] = useState(true);
   const [calling, setCalling] = useState(false);
   const [notification, setNotification] = useState<Notification>(null);
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
 
   const [showAddCandidate, setShowAddCandidate] = useState(false);
   const [currentJob, setCurrentJob] = useState<Job | null>(null);
@@ -40,6 +42,7 @@ const Hiring: React.FC = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
+  const [activeTab, setActiveTab] = useState<'pipeline' | 'ai_recruiter'>('pipeline');
   const pipelineRef = useRef<HTMLDivElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
   const location = useLocation();
@@ -135,7 +138,7 @@ const Hiring: React.FC = () => {
           email: c.email,
           phone: c.phone,
           // Extract experience from first application, ideally they match
-          totalExperience: c.screening_skills || '', 
+          totalExperience: c.total_experience || c.experience_years || '', 
           applications: []
         });
       }
@@ -318,7 +321,7 @@ const Hiring: React.FC = () => {
       }
 
       // Create live activity entries for outreach calls
-      const newActivities: ActivityItem[] = validCandidates.map((candidate) => ({
+      const newActivities: any[] = validCandidates.map((candidate) => ({
         id: `${Date.now()}-${candidate.id}`,
         candidateName: candidate.name,
         type: 'call',
@@ -520,150 +523,174 @@ const Hiring: React.FC = () => {
           } : undefined}
         />
 
-        <EnhancedStatsCards
-          stats={[
-            {
-              title: 'Total Candidates',
-              value: groupedCandidates.length,
-              icon: <Users className="h-5 w-5" />,
-              subtitle: 'Unique people in pipeline',
-              trend: groupedCandidates.length > 0 ? 'up' : 'neutral',
-              trendValue: 'New',
-            },
-            {
-              title: 'Total Applications',
-              value: candidates.length,
-              icon: <BriefcaseBusiness className="h-5 w-5" />,
-              subtitle: 'Total database rows',
-              trend: candidates.length > 0 ? 'up' : 'neutral',
-            },
-            {
-              title: 'Shortlisted',
-              value: shortlistedCandidates.length,
-              icon: <Star className="h-5 w-5" />,
-              subtitle: 'Strong matches (≥70%)',
-              trend: shortlistedCandidates.length > 0 ? 'up' : 'neutral',
-            },
-            {
-              title: 'Interested',
-              value: aiQualifiedCandidates.length,
-              icon: <Heart className="h-5 w-5" />,
-              subtitle: 'Successfully screened by AI',
-              trend: aiQualifiedCandidates.length > 0 ? 'up' : 'neutral',
-            },
-            {
-              title: 'Pending Outreach',
-              value: pendingCandidates.length,
-              icon: <PhoneCall className="h-5 w-5" />,
-              subtitle: 'Awaiting AI screening call',
-              trend: 'neutral',
-            },
-          ]}
-        />
-
-        <QuickActionsBar
-          onAddCandidate={() => setShowAddCandidate((current) => !current)}
-          onStartOutreach={handleStartCalling}
-          onStartOutreachAll={handleStartCallingAll}
-          onSendEmails={handleSendEmails}
-          onViewResults={scrollToResults}
-          onDownloadCandidates={() => hiringApi.downloadExcel('candidates', selectedDate, activeJobId)}
-          onDownloadCalls={() => hiringApi.downloadExcel('calls', selectedDate, activeJobId)}
-          isGlobal={!activeJobId}
-        />
-
-        {showAddCandidate && (
-          <div className="w-full">
-            <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Add Profiles</h3>
-                  <p className="mt-1 text-sm font-medium text-slate-600">
-                    Upload a resume and generate a shortlist-ready profile from your hiring brief.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowAddCandidate(false)}
-                  className="rounded-2xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
-                >
-                  Close
-                </button>
-              </div>
-              <ResumeUpload
-                onUpload={handleAddCandidate}
-                onManualAdd={handleManualAdd}
-                isUploading={uploading}
-                initialJob={currentJob}
-              />
-            </div>
+        {currentJob && (
+          <div className="flex gap-4 border-b border-slate-200 mb-6 pb-2">
+            <button 
+              onClick={() => setActiveTab('pipeline')}
+              className={`font-semibold text-sm pb-2 border-b-2 transition ${activeTab === 'pipeline' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+            >
+              Hiring Pipeline
+            </button>
+            <button 
+              onClick={() => setActiveTab('ai_recruiter')}
+              className={`font-semibold text-sm pb-2 border-b-2 transition flex items-center gap-2 ${activeTab === 'ai_recruiter' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+            >
+              <Bot className="h-4 w-4" /> AI Recruiter
+            </button>
           </div>
         )}
 
-        <div className="grid items-start gap-6">
-          <div ref={pipelineRef} className="h-full">
-            <div className="h-full rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm">
-              <div className="mb-4">
-              <div 
-                className="mb-4 flex items-center justify-between cursor-pointer select-none"
-                onClick={() => setIsUploadedExpanded(!isUploadedExpanded)}
-              >
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-slate-100 mb-2">
-                    <Users className="h-3 w-3" />
-                    Real-time Pipeline
+        {activeTab === 'ai_recruiter' && currentJob ? (
+          <AiRecruiterConfig job={currentJob} />
+        ) : (
+          <>
+            <EnhancedStatsCards
+              stats={[
+                {
+                  title: 'Total Candidates',
+                  value: groupedCandidates.length,
+                  icon: <Users className="h-5 w-5" />,
+                  subtitle: 'Unique people in pipeline',
+                  trend: groupedCandidates.length > 0 ? 'up' : 'neutral',
+                  trendValue: 'New',
+                },
+                {
+                  title: 'Total Applications',
+                  value: candidates.length,
+                  icon: <BriefcaseBusiness className="h-5 w-5" />,
+                  subtitle: 'Total database rows',
+                  trend: candidates.length > 0 ? 'up' : 'neutral',
+                },
+                {
+                  title: 'Shortlisted',
+                  value: shortlistedCandidates.length,
+                  icon: <Star className="h-5 w-5" />,
+                  subtitle: 'Strong matches (≥70%)',
+                  trend: shortlistedCandidates.length > 0 ? 'up' : 'neutral',
+                },
+                {
+                  title: 'Interested',
+                  value: aiQualifiedCandidates.length,
+                  icon: <Heart className="h-5 w-5" />,
+                  subtitle: 'Successfully screened by AI',
+                  trend: aiQualifiedCandidates.length > 0 ? 'up' : 'neutral',
+                },
+                {
+                  title: 'Pending Outreach',
+                  value: pendingCandidates.length,
+                  icon: <PhoneCall className="h-5 w-5" />,
+                  subtitle: 'Awaiting AI screening call',
+                  trend: 'neutral',
+                },
+              ]}
+            />
+
+            <QuickActionsBar
+              onAddCandidate={() => setShowAddCandidate((current) => !current)}
+              onStartOutreach={handleStartCalling}
+              onStartOutreachAll={handleStartCallingAll}
+              onSendEmails={handleSendEmails}
+              onViewResults={scrollToResults}
+              onDownloadCandidates={() => hiringApi.downloadExcel('candidates', selectedDate, activeJobId)}
+              onDownloadCalls={() => hiringApi.downloadExcel('calls', selectedDate, activeJobId)}
+              isGlobal={!activeJobId}
+            />
+
+            {showAddCandidate && (
+              <div className="w-full">
+                <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="text-2xl font-black text-slate-900 tracking-tight">Add Profiles</h3>
+                      <p className="mt-1 text-sm font-medium text-slate-600">
+                        Upload a resume and generate a shortlist-ready profile from your hiring brief.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCandidate(false)}
+                      className="rounded-2xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                    >
+                      Close
+                    </button>
                   </div>
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Uploaded Candidates</h2>
-                  <p className="mt-1 text-sm font-medium text-slate-600">
-                    Manage resumes you've uploaded and track their screening progress.
-                  </p>
+                  <ResumeUpload
+                    onUpload={handleAddCandidate}
+                    onManualAdd={handleManualAdd}
+                    isUploading={uploading}
+                    initialJob={currentJob}
+                  />
                 </div>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
-                  {isUploadedExpanded ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+            )}
+
+            <div className="grid items-start gap-6 min-w-0">
+              <div ref={pipelineRef} className="min-w-0">
+                <div className="rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm min-w-0">
+                  <div className="mb-4">
+                  <div 
+                    className="mb-4 flex items-center justify-between cursor-pointer select-none"
+                    onClick={() => setIsUploadedExpanded(!isUploadedExpanded)}
+                  >
+                    <div>
+                      <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-slate-100 mb-2">
+                        <Users className="h-3 w-3" />
+                        Real-time Pipeline
+                      </div>
+                      <h2 className="text-2xl font-black text-slate-900 tracking-tight">Uploaded Candidates</h2>
+                      <p className="mt-1 text-sm font-medium text-slate-600">
+                        Manage resumes you've uploaded and track their screening progress.
+                      </p>
+                    </div>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
+                      {isUploadedExpanded ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                      )}
+                    </div>
+                  </div>
+
+                  {isUploadedExpanded && (
+                    <div className="mt-4">
+                      {loading ? (
+                        <PipelineTable
+                          groupedCandidates={[]}
+                          isLoading={true}
+                        />
+                      ) : candidates.length === 0 ? (
+                        <div className="flex h-full flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center shadow-sm">
+                          <div className="mx-auto inline-flex rounded-full bg-white p-4 text-slate-300 shadow-sm">
+                            <Users className="h-8 w-8" />
+                          </div>
+                          <h3 className="mt-4 text-lg font-bold text-slate-900">No candidates uploaded yet</h3>
+                          <p className="mt-2 text-sm text-slate-500 max-w-xs">
+                            Upload candidate resumes to begin AI screening and outreach.
+                          </p>
+                          <button
+                            onClick={() => setShowAddCandidate(true)}
+                            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98]"
+                          >
+                            Upload Candidates
+                          </button>
+                        </div>
+                      ) : (
+                        <PipelineTable
+                          groupedCandidates={groupedCandidates}
+                          onCallCandidate={handleCallCandidate}
+                          onDeleteCandidate={handleDeleteCandidate}
+                          onViewCandidate={setViewingResult}
+                          isLoading={false}
+                        />
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
-
-              {isUploadedExpanded && (
-                <div className="h-full">
-                  {loading ? (
-                    <PipelineTable
-                      groupedCandidates={[]}
-                      isLoading={true}
-                    />
-                  ) : candidates.length === 0 ? (
-                    <div className="flex h-full flex-col items-center justify-center rounded-[24px] border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center shadow-sm">
-                      <div className="mx-auto inline-flex rounded-full bg-white p-4 text-slate-300 shadow-sm">
-                        <Users className="h-8 w-8" />
-                      </div>
-                      <h3 className="mt-4 text-lg font-bold text-slate-900">No candidates uploaded yet</h3>
-                      <p className="mt-2 text-sm text-slate-500 max-w-xs">
-                        Upload candidate resumes to begin AI screening and outreach.
-                      </p>
-                      <button
-                        onClick={() => setShowAddCandidate(true)}
-                        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        Upload Candidates
-                      </button>
-                    </div>
-                  ) : (
-                    <PipelineTable
-                      groupedCandidates={groupedCandidates}
-                      onCallCandidate={handleCallCandidate}
-                      onDeleteCandidate={handleDeleteCandidate}
-                      onViewCandidate={setViewingResult}
-                      isLoading={false}
-                    />
-                  )}
-                </div>
-              )}
             </div>
           </div>
-        </div>
+          </>
+        )}
 
 
 
@@ -702,7 +729,6 @@ const Hiring: React.FC = () => {
           />
         )}
 
-        </div>
       </div>
     </div>
   );

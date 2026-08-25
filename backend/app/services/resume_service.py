@@ -60,6 +60,7 @@ def fallback_parse_resume_text(text: str) -> dict:
         "phone": phone_match.group(0).strip() if phone_match else None,
         "skills": _extract_skills_from_text(text),
         "experience_summary": " ".join(summary_lines)[:300] if summary_lines else "Resume parsed with local fallback.",
+        "total_experience": "Not Assessed"
     }
 
 def clean_json_response(text: str) -> dict:
@@ -139,7 +140,8 @@ class ResumeService:
             "email": "Email Address",
             "phone": "Phone Number",
             "skills": ["Skill 1", "Skill 2", ...],
-            "experience_summary": "Short summary of experience"
+            "experience_summary": "Short summary of experience",
+            "total_experience": "X years"
         }}
         
         Resume text:

@@ -23,6 +23,25 @@ interface SendShortlistedEmailsResponse {
   errors?: string[];
 }
 
+export interface ScreeningQuestion {
+  id: string;
+  question: string;
+  category: string;
+  required: boolean;
+  order: number;
+}
+
+export interface JobAIConfig {
+  job_id: string;
+  language: string;
+  tone: string;
+  voice: string;
+  screening_mode: string;
+  is_active: boolean;
+  status: string;
+  screening_questions: ScreeningQuestion[];
+}
+
 const HIRE_BASE = (import.meta as any).env.VITE_API_URL || 'http://localhost:8001';
 
 const hiringClient = axios.create({
@@ -84,6 +103,14 @@ const normalizeResumeResponse = (result: any): Candidate => {
     email_sent: !!result.email_sent,
     screening_score: result.screening_score,
     screening_skills: result.screening_skills,
+    
+    // Experience Mapping
+    total_experience: result.total_experience,
+    relevant_experience: result.relevant_experience,
+    experience_years: result.experience_years,
+    employment_status: result.employment_status,
+    joining_availability: result.joining_availability,
+    interview_availability: result.interview_availability,
   };
 
 
@@ -127,6 +154,31 @@ export const hiringApi = {
     } catch (error) {
       return { success: false, message: extractApiErrorMessage(error) };
     }
+  },
+
+  async getAiConfig(jobId: string): Promise<JobAIConfig> {
+    const { data } = await hiringClient.get(`/api/ai-recruiter/${jobId}`);
+    return data;
+  },
+
+  async updateAiConfig(jobId: string, config: Partial<JobAIConfig>): Promise<JobAIConfig> {
+    const { data } = await hiringClient.put(`/api/ai-recruiter/${jobId}`, config);
+    return data;
+  },
+
+  async generateAiQuestions(jobId: string): Promise<{ questions: ScreeningQuestion[] }> {
+    const { data } = await hiringClient.post(`/api/ai-recruiter/${jobId}/generate-questions`);
+    return data;
+  },
+
+  async previewAiPrompt(jobId: string): Promise<{ prompt: string }> {
+    const { data } = await hiringClient.get(`/api/ai-recruiter/${jobId}/preview`);
+    return data;
+  },
+
+  async simulateAiRecruiter(jobId: string, messages: { role: string, content: string }[]): Promise<{ response: string }> {
+    const { data } = await hiringClient.post(`/api/ai-recruiter/${jobId}/simulate`, { messages });
+    return data;
   },
 
   async getCandidates(filter: CandidateFilter, date?: string, jobId?: string): Promise<CandidateResponse> {

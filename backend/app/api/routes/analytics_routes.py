@@ -425,7 +425,8 @@ async def export_analytics(
 
     df = pd.DataFrame(data) if data else pd.DataFrame(columns=["Period" if report_type != "roles" else "Role", "Candidates", "Screened", "Interviews", "Hired"])
     
-    fd, temp_path = tempfile.mkstemp(suffix=f".{format}")
+    file_ext = "xlsx" if format == "excel" else "csv"
+    fd, temp_path = tempfile.mkstemp(suffix=f".{file_ext}")
     os.close(fd)
     
     if format == "csv":
