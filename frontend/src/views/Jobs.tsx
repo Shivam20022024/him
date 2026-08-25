@@ -146,7 +146,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
             placeholder="Search jobs by title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-14 w-full rounded-2xl border border-[#e2e8f0] bg-white pl-12 pr-5 text-sm shadow-[0_2px_4px_rgba(25,54,93,0.04)] outline-none placeholder:text-slate-500 focus:border-[#003d9b] focus:ring-4 focus:ring-[#003d9b]/10 transition-all"
+            className="h-14 w-full rounded-2xl border border-[#e2e8f0] bg-white pl-12 pr-5 text-sm shadow-[0_2px_4px_rgba(25,54,93,0.04)] outline-none placeholder:text-slate-500 focus:border-[#6d28d9] focus:ring-4 focus:ring-[#6d28d9]/10 transition-all"
           />
         </label>
         
@@ -167,7 +167,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                   setNewJob({ title: '', description: '', skills: '', experience: '0-2 years', location: '', jobType: 'Full-time' });
                 }
               }}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#003d9b] px-5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#003d9b]/90 active:scale-95 whitespace-nowrap"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#6d28d9] px-5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#6d28d9]/90 active:scale-95 whitespace-nowrap"
             >
               <Plus className="h-5 w-5" />
               {showAddForm ? 'Cancel' : 'Create new job'}
@@ -282,7 +282,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
             {jobs.length > 0 && !loading && (
                 <div className="mt-9 flex items-center gap-2">
                   <h2 className="text-lg font-semibold tracking-[-0.02em] text-slate-900">Open positions</h2>
-                  <span className="rounded-md border border-[#003d9b]/20 bg-[#003d9b]/10 px-2 py-0.5 text-[11px] font-bold text-[#003d9b]">
+                  <span className="rounded-md border border-[#6d28d9]/20 bg-[#6d28d9]/10 px-2 py-0.5 text-[11px] font-bold text-[#6d28d9]">
                     {jobs.length}
                   </span>
                 </div>
@@ -296,7 +296,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                   onClick={() => handleStartHiring(job.id)}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-slate-900 group-hover:text-[#003d9b] transition-colors">
+                    <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-slate-900 group-hover:text-[#6d28d9] transition-colors">
                       {job.title}
                     </h2>
                     <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -346,7 +346,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                   {job.skills && job.skills.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {job.skills.slice(0, 3).map(skill => (
-                        <span key={skill} className="inline-flex max-w-full rounded-md border border-[#003d9b]/20 bg-[#003d9b]/10 px-2.5 py-1 text-[11px] font-semibold text-[#003d9b]">
+                        <span key={skill} className="inline-flex max-w-full rounded-md border border-[#6d28d9]/20 bg-[#6d28d9]/10 px-2.5 py-1 text-[11px] font-semibold text-[#6d28d9]">
                           {skill}
                         </span>
                       ))}
@@ -369,7 +369,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                         e.stopPropagation();
                         handleStartHiring(job.id);
                       }}
-                      className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[11px] font-semibold border border-[#003d9b]/25 bg-[#003d9b]/5 text-[#003d9b] hover:bg-[#003d9b]/10 transition-all"
+                      className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[11px] font-semibold border border-[#6d28d9]/25 bg-[#6d28d9]/5 text-[#6d28d9] hover:bg-[#6d28d9]/10 transition-all"
                     >
                       Start hiring <ChevronRight size={14} />
                     </button>

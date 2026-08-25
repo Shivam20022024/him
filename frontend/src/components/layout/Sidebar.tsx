@@ -27,7 +27,7 @@ const Sidebar = () => {
           </div>
           <div>
             <p className="text-[20px] font-bold tracking-[-0.04em] text-slate-900 leading-tight">Hireonomous</p>
-            <p className="mt-0.5 text-[11px] font-medium leading-tight text-[#003d9b]">
+            <p className="mt-0.5 text-[11px] font-medium leading-tight text-[#6d28d9]">
               Find the right talent,<br />faster.
             </p>
           </div>
