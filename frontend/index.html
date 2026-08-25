@@ -68,6 +68,81 @@
     }
   </script>
   <style>
+    :root {
+      --background: oklch(0.985 0.002 260);
+      --foreground: oklch(0.19 0.025 260);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.19 0.025 260);
+      --primary: oklch(0.49 0.22 286);
+      --primary-foreground: oklch(0.99 0 0);
+      --muted: oklch(0.96 0.006 260);
+      --muted-foreground: oklch(0.52 0.025 260);
+      --border: oklch(0.91 0.01 260);
+    }
+    
+    .brand-mark {
+      display: flex;
+      width: 40px;
+      height: 40px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: oklch(0.96 0.025 286);
+      color: var(--primary);
+      font-size: 26px;
+      line-height: 1;
+    }
+    
+    .avatar-blue {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .job-card {
+      display: flex;
+      min-height: 252px;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--card);
+      padding: 20px;
+      box-shadow: 0 2px 4px color-mix(in oklab, var(--foreground) 4%, transparent);
+      transition: border-color .2s, box-shadow .2s, transform .2s;
+    }
+    .job-card:hover {
+      border-color: color-mix(in oklab, var(--primary) 30%, var(--border));
+      box-shadow: 0 8px 20px color-mix(in oklab, var(--primary) 8%, transparent);
+      transform: translateY(-1px);
+    }
+    .job-card-active {
+      border-color: color-mix(in oklab, var(--primary) 62%, white);
+      box-shadow: 0 4px 10px color-mix(in oklab, var(--primary) 14%, transparent);
+    }
+    
+    .icon-button {
+      display: flex;
+      width: 30px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted-foreground);
+    }
+    .icon-button:hover {
+      background: var(--muted);
+      color: var(--foreground);
+    }
+    
+    .pin-dot {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      border: 1.5px solid currentColor;
+      border-radius: 999px 999px 999px 0;
+      transform: rotate(-45deg);
+    }
+
     /* Text rendering optimizations for Windows/Chrome */
     * {
       -webkit-font-smoothing: antialiased !important;

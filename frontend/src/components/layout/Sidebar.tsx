@@ -1,11 +1,11 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
-  Briefcase, 
-  Users, 
-  LineChart, 
-  BrainCircuit,
-  LogOut
+  BriefcaseBusiness, 
+  UsersRound, 
+  LayoutGrid, 
+  LogOut,
+  BrainCircuit
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -13,36 +13,38 @@ const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const navItems = [
-    { label: 'Jobs', path: '/jobs', icon: <Briefcase size={22} /> },
-    { label: 'Hiring', path: '/hiring', icon: <Users size={22} /> },
-    { label: 'Analytics', path: '/analytics', icon: <LineChart size={22} /> },
+    { label: 'Jobs', path: '/jobs', icon: <BriefcaseBusiness size={22} strokeWidth={1.8} /> },
+    { label: 'Hiring', path: '/hiring', icon: <UsersRound size={22} strokeWidth={1.8} /> },
+    { label: 'Analytics', path: '/analytics', icon: <LayoutGrid size={22} strokeWidth={1.8} /> },
   ];
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-slate-200 bg-white transition-transform">
-      <div className="flex h-full flex-col overflow-y-auto px-4 py-6">
-        {/* Logo */}
-        <div className="mb-10 flex items-center gap-3 px-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 shrink-0">
+    <aside className="hidden lg:flex w-[255px] shrink-0 flex-col border-r border-[#e2e8f0] bg-white h-screen fixed left-0 top-0 z-40">
+      <div className="flex h-[150px] items-center justify-between border-b border-[#e2e8f0] px-6">
+        <div className="flex items-center gap-3">
+          <div className="brand-mark">
             <BrainCircuit size={24} />
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Hireonomous</h1>
-            <span className="text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent tracking-wide mt-0.5">Find the right talent, faster.</span>
+          <div>
+            <p className="text-[20px] font-bold tracking-[-0.04em] text-slate-900 leading-tight">Hireonomous</p>
+            <p className="mt-0.5 text-[11px] font-medium leading-tight text-[#003d9b]">
+              Find the right talent,<br />faster.
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Navigation */}
-        <ul className="space-y-1.5 font-medium">
+      <nav className="flex-1 px-4 py-8 overflow-y-auto" aria-label="Main navigation">
+        <ul className="space-y-2">
           {navItems.map((item) => (
             <li key={item.label}>
               <NavLink
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-4 py-3 text-base transition-all font-black tracking-wide ${
+                  `flex w-full items-center gap-4 rounded-xl px-4 py-3 text-[15px] font-semibold transition-colors ${
                     isActive
-                      ? 'bg-slate-100 text-slate-900'
-                      : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-[#eef3f8] text-slate-900'
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                   }`
                 }
               >
@@ -52,28 +54,28 @@ const Sidebar = () => {
             </li>
           ))}
         </ul>
+      </nav>
 
-        {/* User Profile Bottom */}
-        <div className="mt-auto pt-6 border-t border-slate-100">
-          <div className="flex items-center gap-3 rounded-xl px-2 py-3 hover:bg-slate-50 transition-colors">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 font-bold text-white shadow-sm uppercase shrink-0">
-              {user?.name?.substring(0, 2) || 'US'}
-            </div>
-            <div className="flex flex-col truncate flex-1">
-              <span className="text-base font-black text-slate-900 tracking-tight truncate">{user?.name || 'User'}</span>
-              <span className="text-sm font-semibold text-slate-700 truncate">{user?.email || 'user@example.com'}</span>
-            </div>
-            <button 
-              onClick={() => {
-                logout();
-                navigate('/login');
-              }}
-              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-              title="Logout"
-            >
-              <LogOut size={20} />
-            </button>
+      <div className="border-t border-[#e2e8f0] p-6 mt-auto">
+        <div className="flex items-center gap-3">
+          <div className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white uppercase">
+            {user?.name?.substring(0, 2) || 'US'}
           </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-slate-900">{user?.name || 'User'}</p>
+            <p className="truncate text-xs text-slate-500">{user?.email || 'user@example.com'}</p>
+          </div>
+          <button 
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            aria-label="Sign out" 
+            title="Logout"
+            className="rounded-lg border border-[#e2e8f0] p-2 text-slate-500 hover:bg-slate-50 hover:text-red-500 transition-colors"
+          >
+            <LogOut size={17} />
+          </button>
         </div>
       </div>
     </aside>

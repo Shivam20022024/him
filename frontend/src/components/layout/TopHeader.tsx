@@ -1,28 +1,30 @@
 import React from 'react';
-import { Search } from 'lucide-react';
+import { ChevronDown, Menu } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const TopHeader = () => {
   const { user } = useAuth();
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
-      <div className="flex flex-1 items-center gap-4">
-        {/* Search bar removed; implemented locally per-view */}
-      </div>
-
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end">
-            <span className="text-sm font-bold text-slate-900">{user?.name || "User"}</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              {user?.role?.replace('_', ' ') || 'User'}
-            </span>
-          </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm uppercase">
-            {user?.name?.charAt(0) || 'U'}
-          </div>
+    <header className="flex h-[88px] items-center justify-between border-b border-[#e2e8f0] bg-white px-5 lg:px-10 sticky top-0 z-30">
+      <button aria-label="Open navigation" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden">
+        <Menu size={21} />
+      </button>
+      <div className="hidden lg:block" />
+      
+      <div className="flex items-center gap-3">
+        <div className="hidden text-right sm:block">
+          <p className="text-sm font-semibold text-slate-900">{user?.name || "User"}</p>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-slate-500">
+            {user?.role?.replace('_', ' ') || 'Organization admin'}
+          </p>
         </div>
+        <div className="avatar avatar-blue uppercase">
+          {user?.name?.charAt(0) || 'U'}
+        </div>
+        <button aria-label="Account menu" className="rounded-md p-1 text-slate-500 hover:bg-slate-100 transition-colors">
+          <ChevronDown size={16} />
+        </button>
       </div>
     </header>
   );

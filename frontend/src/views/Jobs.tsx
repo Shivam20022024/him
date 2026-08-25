@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Briefcase, Plus, Calendar, ChevronRight, Loader2, MapPin, Clock, Award, Trash2, Search, Edit2 } from 'lucide-react';
+import { Briefcase, Plus, CalendarDays, ChevronRight, Loader2, MapPin, Clock, UserRound, Trash2, Search, Edit2, BriefcaseBusiness, FileText } from 'lucide-react';
 import { Job } from '../types';
 import { hiringApi } from '../services/hiringApi';
 import { useNavigate } from 'react-router-dom';
@@ -139,26 +139,22 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4fb_100%)] px-4 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-5">
-                {/* Full-width Search Bar at the Top */}
-        <div className="w-full mb-2">
-          <div className="relative w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search jobs by title..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 py-3 pl-12 pr-4 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all bg-white"
-            />
-          </div>
-        </div>
-
-        {/* Title and Actions Row */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                <label className="relative block mb-2">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+          <input
+            type="text"
+            placeholder="Search jobs by title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-14 w-full rounded-2xl border border-[#e2e8f0] bg-white pl-12 pr-5 text-sm shadow-[0_2px_4px_rgba(25,54,93,0.04)] outline-none placeholder:text-slate-500 focus:border-[#003d9b] focus:ring-4 focus:ring-[#003d9b]/10 transition-all"
+          />
+        </label>
+        
+        <div className="mt-7 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Jobs Board</h1>
-            <p className="mt-1 text-base font-semibold text-slate-800">
-              Start by creating a job to automatically find the best candidates using AI.
+            <h1 className="text-[30px] font-bold tracking-[-0.045em] text-slate-900">Jobs Board</h1>
+            <p className="mt-1 text-sm font-medium text-slate-500">
+              Create a job and let AI find your next great hire.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -276,117 +272,109 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
             <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
           </div>
         ) : jobs.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 text-slate-400">
-              <Briefcase className="h-6 w-6" />
+          <div className="rounded-2xl border border-dashed border-[#e2e8f0] bg-white py-16 text-center">
+              <FileText className="mx-auto text-slate-400" size={28} />
+              <p className="mt-3 text-sm font-semibold text-slate-900">No jobs found</p>
+              <p className="mt-1 text-xs text-slate-500">Create a new job to start hiring.</p>
             </div>
-            <h3 className="mt-4 text-sm font-semibold text-slate-900">No jobs posted yet</h3>
-            <p className="mt-1 text-sm text-slate-500">Create a job posting to start your hiring workflow.</p>
-          </div>
         ) : (
           <>
             {jobs.length > 0 && !loading && (
-              <div className="flex items-center gap-3 pt-2">
-                <h2 className="text-lg font-bold text-slate-900 tracking-tight">Open Positions</h2>
-                <div className="flex h-6 min-w-[24px] items-center justify-center rounded-lg bg-white border border-slate-200 px-1.5 shadow-sm">
-                  <span className="text-xs font-bold text-blue-600">{jobs.length}</span>
+                <div className="mt-9 flex items-center gap-2">
+                  <h2 className="text-lg font-semibold tracking-[-0.02em] text-slate-900">Open positions</h2>
+                  <span className="rounded-md border border-[#003d9b]/20 bg-[#003d9b]/10 px-2 py-0.5 text-[11px] font-bold text-[#003d9b]">
+                    {jobs.length}
+                  </span>
                 </div>
-              </div>
-            )}
+              )}
 
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {jobs.filter(j => j.title.toLowerCase().includes(searchQuery.toLowerCase())).map(job => (
               <div 
                 key={job.id} 
-                className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-blue-300 hover:shadow-md cursor-pointer"
-                onClick={() => handleStartHiring(job.id)}
-              >
-                <div>
+                className="job-card group cursor-pointer"
+                  onClick={() => handleStartHiring(job.id)}
+                >
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-lg font-black text-slate-900 leading-tight group-hover:text-blue-700 transition-colors">
+                    <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-slate-900 group-hover:text-[#003d9b] transition-colors">
                       {job.title}
-                    </h3>
+                    </h2>
                     <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={(e) => handleEditJobClick(job, e)}
                         title="Edit job"
-                        className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-blue-50 hover:text-blue-600"
+                        className="icon-button"
                       >
-                        <Edit2 className="h-4 w-4" />
+                        <Edit2 size={15} />
                       </button>
                       <button
                         onClick={(e) => handleDeleteJob(job, e)}
                         disabled={deletingJobId === job.id}
                         title="Delete job"
-                        className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                        className="icon-button"
                       >
-                        {deletingJobId === job.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
+                        {deletingJobId === job.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 size={15} />}
                       </button>
                     </div>
                   </div>
                   
-                  <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold text-slate-700">
+                  <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] font-medium text-slate-500">
                     {job.location && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5" />
+                      <span className="inline-flex items-center gap-1">
+                        <span className="pin-dot text-slate-400" />
                         {job.location}
                       </span>
                     )}
                     {job.jobType && (
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" />
+                      <span className="inline-flex items-center gap-1">
+                        <BriefcaseBusiness size={13} />
                         {job.jobType}
                       </span>
                     )}
                     {job.experience && (
-                      <span className="flex items-center gap-1">
-                        <Award className="h-3.5 w-3.5" />
+                      <span className="inline-flex items-center gap-1">
+                        <UserRound size={13} />
                         {job.experience}
                       </span>
                     )}
                   </div>
 
-                  <p className="mt-4 text-sm font-medium text-slate-700 line-clamp-2 leading-relaxed">
+                  <p className="mt-5 min-h-5 text-sm text-slate-500 line-clamp-3">
                     {job.description}
                   </p>
                   
                   {job.skills && job.skills.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-1.5">
                       {job.skills.slice(0, 3).map(skill => (
-                        <span key={skill} className="inline-flex items-center rounded-lg bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-800 border border-blue-200 shadow-sm">
+                        <span key={skill} className="inline-flex max-w-full rounded-md border border-[#003d9b]/20 bg-[#003d9b]/10 px-2.5 py-1 text-[11px] font-semibold text-[#003d9b]">
                           {skill}
                         </span>
                       ))}
                       {job.skills.length > 3 && (
-                        <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 border border-slate-200 shadow-sm">
+                        <span className="inline-flex max-w-full rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
                           +{job.skills.length - 3}
                         </span>
                       )}
                     </div>
                   )}
-                </div>
-                
-                <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <span className="flex items-center text-xs font-semibold text-slate-500">
-                    <Calendar className="mr-1 h-3.5 w-3.5" />
-                    {new Date(job.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </span>
                   
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStartHiring(job.id);
-                    }}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3.5 py-2 text-xs font-bold text-blue-700 border border-blue-200 shadow-sm transition-all group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600"
-                  >
-                    Start Hiring <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="mt-5 pt-4 border-t border-[#e2e8f0] flex items-center justify-between">
+                    <span className="flex items-center text-[11px] text-slate-500 gap-1.5">
+                      <CalendarDays size={14} />
+                      {new Date(job.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                    
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStartHiring(job.id);
+                      }}
+                      className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[11px] font-semibold border border-[#003d9b]/25 bg-[#003d9b]/5 text-[#003d9b] hover:bg-[#003d9b]/10 transition-all"
+                    >
+                      Start hiring <ChevronRight size={14} />
+                    </button>
+                  </div>
                 </div>
-              </div>
             ))}
             </div>
           </>
