@@ -239,7 +239,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
             {jobs.map(job => (
               <div 
                 key={job.id} 
-                className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-blue-300 hover:shadow-md cursor-pointer"
+                className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:border-blue-300 hover:shadow-md cursor-pointer"
                 onClick={() => handleStartHiring(job.id)}
               >
                 <div>
