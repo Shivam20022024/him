@@ -245,7 +245,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               variant="outline"
               size="lg"
               className="w-full sm:w-auto px-10 py-4 rounded-xl border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-50 transition-all duration-300"
-              onClick={() => window.open('mailto:sales@hireonomous.com')}
+              onClick={() => window.location.href = 'https://novalantis.com/contact-us/'}
             >
               Contact Sales
             </Button>
