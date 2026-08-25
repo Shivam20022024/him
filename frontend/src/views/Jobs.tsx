@@ -146,14 +146,14 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
             placeholder="Search jobs by title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-14 w-full rounded-2xl border border-[#e2e8f0] bg-white pl-12 pr-5 text-sm shadow-[0_2px_4px_rgba(25,54,93,0.04)] outline-none placeholder:text-slate-500 focus:border-[#6d28d9] focus:ring-4 focus:ring-[#6d28d9]/10 transition-all"
+            className="h-16 w-full rounded-2xl border border-[#e2e8f0] bg-white pl-14 pr-5 text-base shadow-[0_2px_4px_rgba(25,54,93,0.04)] outline-none placeholder:text-slate-500 focus:border-[#6d28d9] focus:ring-4 focus:ring-[#6d28d9]/10 transition-all"
           />
         </label>
         
         <div className="mt-7 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-[30px] font-bold tracking-[-0.045em] text-slate-900">Jobs Board</h1>
-            <p className="mt-1 text-sm font-medium text-slate-500">
+            <h1 className="text-4xl font-bold tracking-[-0.045em] text-slate-900">Jobs Board</h1>
+            <p className="mt-2 text-base font-medium text-slate-500">
               Create a job and let AI find your next great hire.
             </p>
           </div>
@@ -167,7 +167,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                   setNewJob({ title: '', description: '', skills: '', experience: '0-2 years', location: '', jobType: 'Full-time' });
                 }
               }}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#6d28d9] px-5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#6d28d9]/90 active:scale-95 whitespace-nowrap"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#6d28d9] px-6 text-base font-semibold text-white shadow-sm transition-all hover:bg-[#6d28d9]/90 active:scale-95 whitespace-nowrap"
             >
               <Plus className="h-5 w-5" />
               {showAddForm ? 'Cancel' : 'Create new job'}
@@ -281,8 +281,8 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
           <>
             {jobs.length > 0 && !loading && (
                 <div className="mt-9 flex items-center gap-2">
-                  <h2 className="text-lg font-semibold tracking-[-0.02em] text-slate-900">Open positions</h2>
-                  <span className="rounded-md border border-[#6d28d9]/20 bg-[#6d28d9]/10 px-2 py-0.5 text-[11px] font-bold text-[#6d28d9]">
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900">Open positions</h2>
+                  <span className="rounded-md border border-[#6d28d9]/20 bg-[#6d28d9]/10 px-2 py-0.5 text-[13px] font-bold text-[#6d28d9]">
                     {jobs.length}
                   </span>
                 </div>
@@ -296,7 +296,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                   onClick={() => handleStartHiring(job.id)}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <h2 className="text-[17px] font-semibold tracking-[-0.02em] text-slate-900 group-hover:text-[#6d28d9] transition-colors">
+                    <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-slate-900 group-hover:text-[#6d28d9] transition-colors">
                       {job.title}
                     </h2>
                     <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -318,7 +318,7 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                     </div>
                   </div>
                   
-                  <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] font-medium text-slate-500">
+                  <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-3 text-sm font-medium text-slate-500">
                     {job.location && (
                       <span className="inline-flex items-center gap-1">
                         <span className="pin-dot text-slate-400" />
@@ -327,26 +327,26 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                     )}
                     {job.jobType && (
                       <span className="inline-flex items-center gap-1">
-                        <BriefcaseBusiness size={13} />
+                        <BriefcaseBusiness size={16} />
                         {job.jobType}
                       </span>
                     )}
                     {job.experience && (
                       <span className="inline-flex items-center gap-1">
-                        <UserRound size={13} />
+                        <UserRound size={16} />
                         {job.experience}
                       </span>
                     )}
                   </div>
 
-                  <p className="mt-5 min-h-5 text-sm text-slate-500 line-clamp-3">
+                  <p className="mt-5 min-h-5 text-[16px] text-slate-500 line-clamp-3 leading-relaxed">
                     {job.description}
                   </p>
                   
                   {job.skills && job.skills.length > 0 && (
                       <div className="mt-4 flex flex-col gap-1.5">
                         {job.skills.slice(0, 2).map(skill => (
-                          <span key={skill} className="w-full block rounded-md bg-[#f3e8ff] px-3 py-1.5 text-[11px] font-bold text-[#6d28d9]">
+                          <span key={skill} className="w-full block rounded-md bg-[#f3e8ff] px-4 py-2 text-[14px] font-bold text-[#6d28d9]">
                             {skill}
                           </span>
                         ))}
@@ -354,8 +354,8 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                     )}
                   
                   <div className="mt-5 pt-4 border-t border-[#e2e8f0] flex items-center justify-between">
-                    <span className="flex items-center text-[11px] text-slate-500 gap-1.5">
-                      <CalendarDays size={14} />
+                    <span className="flex items-center text-[13px] text-slate-500 gap-1.5">
+                      <CalendarDays size={18} />
                       {new Date(job.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                     
@@ -364,9 +364,9 @@ const Jobs: React.FC<JobsProps> = ({ onNavigate }) => {
                         e.stopPropagation();
                         handleStartHiring(job.id);
                       }}
-                      className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[11px] font-semibold border border-[#6d28d9]/25 bg-transparent text-[#6d28d9] transition-all group-hover:bg-[#6d28d9] group-hover:text-white"
+                      className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-[15px] font-semibold border border-[#6d28d9]/25 bg-transparent text-[#6d28d9] transition-all group-hover:bg-[#6d28d9] group-hover:text-white"
                     >
-                      Start hiring <ChevronRight size={14} />
+                      Start hiring <ChevronRight size={18} />
                     </button>
                   </div>
                 </div>
