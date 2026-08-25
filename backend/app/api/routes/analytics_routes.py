@@ -226,6 +226,45 @@ async def get_role_metrics(
 ):
     db = get_db()
     current_date_query, _ = get_date_ranges(date_range, custom_start, custom_end)
+    
+    # 1. Fetch ALL jobs for this organization so we show 0-candidate jobs too
+    all_jobs_cursor = db.jobs_board.find({"organization_id": org_id})
+    all_jobs = await all_jobs_cursor.to_list(None)
+    
+    # Initialize dictionary with 0s for every active job
+    stats_map = {}
+    for job in all_jobs:
+        job_id = job.get("id") or str(job.get("_id"))
+        stats_map[job_id] = {
+            "job_id": job_id,
+            "role": job.get("title", "Unknown Role"),
+            "candidates": 0,
+            "screened": 0,
+            "calls_completed": 0,
+            "interested": 0,
+            "callbacks": 0,
+            "interviews": 0,
+            "selected": 0,
+            "not_interested": 0,
+            "hired": 0
+        }
+        
+    # Also initialize for unassigned candidates
+    stats_map[None] = {
+        "job_id": None,
+        "role": "Unassigned Candidates",
+        "candidates": 0,
+        "screened": 0,
+        "calls_completed": 0,
+        "interested": 0,
+        "callbacks": 0,
+        "interviews": 0,
+        "selected": 0,
+        "not_interested": 0,
+        "hired": 0
+    }
+
+    # 2. Run aggregation on candidates to get actual stats
     match = {"organization_id": org_id}
     if current_date_query:
         match["created_at"] = current_date_query
@@ -248,30 +287,45 @@ async def get_role_metrics(
     
     results = await db.candidates.aggregate(pipeline).to_list(100)
     
-    # Enrich with job titles
-    job_ids = [r["_id"] for r in results if r["_id"]]
-    jobs_cursor = db.jobs_board.find({"id": {"$in": job_ids}})
-    jobs_map = {job["id"]: job["title"] for job in await jobs_cursor.to_list(None)}
-    
-    enriched_results = []
+    # 3. Update the stats_map with actual counts
     for r in results:
         job_id = r["_id"]
-        role_name = jobs_map.get(job_id, "Unassigned Candidates") if job_id else "Unassigned Candidates"
-        enriched_results.append({
-            "job_id": job_id,
-            "role": role_name,
-            "candidates": r["candidates"],
-            "screened": r["screened"],
-            "calls_completed": r["calls_completed"],
-            "interested": r["interested"],
-            "callbacks": r["callbacks"],
-            "interviews": r["interviews"],
-            "selected": r.get("selected", 0),
-            "not_interested": r.get("not_interested", 0),
-            "hired": r["hired"]
-        })
+        if job_id not in stats_map:
+            # Fallback for deleted jobs that still have candidates
+            if job_id is None:
+                role_name = "Unassigned Candidates"
+            else:
+                missing_job = await db.jobs_board.find_one({"id": job_id})
+                role_name = missing_job["title"] if missing_job else "Deleted Role"
+            stats_map[job_id] = {
+                "job_id": job_id,
+                "role": role_name,
+                "candidates": 0,
+                "screened": 0,
+                "calls_completed": 0,
+                "interested": 0,
+                "callbacks": 0,
+                "interviews": 0,
+                "selected": 0,
+                "not_interested": 0,
+                "hired": 0
+            }
+            
+        stats_map[job_id]["candidates"] += r.get("candidates", 0)
+        stats_map[job_id]["screened"] += r.get("screened", 0)
+        stats_map[job_id]["calls_completed"] += r.get("calls_completed", 0)
+        stats_map[job_id]["interested"] += r.get("interested", 0)
+        stats_map[job_id]["callbacks"] += r.get("callbacks", 0)
+        stats_map[job_id]["interviews"] += r.get("interviews", 0)
+        stats_map[job_id]["selected"] += r.get("selected", 0)
+        stats_map[job_id]["not_interested"] += r.get("not_interested", 0)
+        stats_map[job_id]["hired"] += r.get("hired", 0)
+
+    # Remove unassigned candidates if there are none
+    if stats_map[None]["candidates"] == 0:
+        del stats_map[None]
         
-    return enriched_results
+    return list(stats_map.values())
 
 @router.get("/trend")
 async def get_trend_data(
