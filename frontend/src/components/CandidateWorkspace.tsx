@@ -293,18 +293,10 @@ const CandidateWorkspace: React.FC<CandidateWorkspaceProps> = ({ candidateGroup,
                           <button onClick={() => onCallCandidate?.(activeApp)} className="mt-4 px-4 py-2 bg-blue-600 text-white font-bold text-sm rounded-lg hover:bg-blue-700 shadow-sm transition">Start Screening</button>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Total Experience</span>
                             <span className="font-bold text-slate-900">{activeApp.total_experience || activeApp.experience_years || 'Not Available'}</span>
-                          </div>
-                          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Relevant Exp</span>
-                            <span className="font-bold text-slate-900">{activeApp.relevant_experience || 'Not Available'}</span>
-                          </div>
-                          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Joining</span>
-                            <span className="font-bold text-slate-900">{activeApp.joining_availability || activeApp.availability || 'Not Available'}</span>
                           </div>
                           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Interest</span>
