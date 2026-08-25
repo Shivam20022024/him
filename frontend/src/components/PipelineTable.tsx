@@ -216,15 +216,6 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                           {group.applications.length === 1 && (
-                             <button
-                               onClick={() => onCallCandidate?.(latestApp)}
-                               className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
-                               title="Call Candidate"
-                             >
-                               <PhoneCall size={18} />
-                             </button>
-                           )}
                            <button
                              onClick={() => onViewCandidate?.(group)}
                              className="rounded-lg px-3 py-1.5 text-xs font-bold text-white bg-slate-900 transition hover:bg-slate-800"
