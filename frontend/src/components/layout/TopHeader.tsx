@@ -23,13 +23,13 @@ const TopHeader = () => {
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end">
-            <span className="text-sm font-bold text-slate-900">{user?.name || "Abishek"}</span>
+            <span className="text-sm font-bold text-slate-900">{user?.name || "User"}</span>
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Company_Admin
+              {user?.role?.replace('_', ' ') || 'User'}
             </span>
           </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm">
-            {user?.name?.charAt(0).toUpperCase() || 'A'}
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm uppercase">
+            {user?.name?.charAt(0) || 'U'}
           </div>
         </div>
       </div>
