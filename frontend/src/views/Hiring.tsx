@@ -453,6 +453,33 @@ const Hiring: React.FC = () => {
     }
   };
 
+  const handleDeleteSelected = async (candidatesToDelete: Candidate[]) => {
+    if (!window.confirm(`Are you sure you want to remove ${candidatesToDelete.length} candidate(s) from the pipeline?`)) {
+      return;
+    }
+
+    try {
+      setNotification({
+        tone: 'info',
+        message: `Deleting ${candidatesToDelete.length} candidate(s)...`,
+      });
+
+      const deletePromises = candidatesToDelete.map(c => hiringApi.deleteCandidate(c.id));
+      await Promise.all(deletePromises);
+      
+      setCandidates((current) => current.filter((c) => !candidatesToDelete.some(del => del.id === c.id)));
+      setNotification({
+        tone: 'success',
+        message: `${candidatesToDelete.length} candidate(s) removed successfully.`,
+      });
+    } catch (error: any) {
+      setNotification({
+        tone: 'warning',
+        message: 'Failed to delete some candidates.',
+      });
+    }
+  };
+
   const handleInterviewCandidate = (candidate: Candidate) => {
     console.log("DEBUG: Setting selectedForInterview to:", candidate.name);
     setSelectedForInterview(candidate);
@@ -679,6 +706,7 @@ const Hiring: React.FC = () => {
                           groupedCandidates={groupedCandidates}
                           onCallCandidate={handleCallCandidate}
                           onDeleteCandidate={handleDeleteCandidate}
+                          onDeleteSelected={handleDeleteSelected}
                           onViewCandidate={setViewingResult}
                           isLoading={false}
                         />

@@ -7,6 +7,7 @@ interface PipelineTableProps {
   groupedCandidates: GroupedCandidate[];
   onCallCandidate?: (candidate: Candidate) => void;
   onDeleteCandidate?: (candidate: Candidate) => void;
+  onDeleteSelected?: (candidates: Candidate[]) => void;
   onViewCandidate?: (group: GroupedCandidate) => void;
   isLoading?: boolean;
 }
@@ -15,11 +16,13 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
   groupedCandidates,
   onCallCandidate,
   onDeleteCandidate,
+  onDeleteSelected,
   onViewCandidate,
   isLoading = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(new Set());
 
   const toggleRow = (id: string, e: React.MouseEvent) => {
     // Prevent toggling when clicking buttons inside the row
@@ -35,6 +38,37 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
         c.phone?.includes(searchQuery)
     );
   }, [groupedCandidates, searchQuery]);
+
+  const toggleSelectAll = () => {
+    if (selectedGroupIds.size === filteredCandidates.length && filteredCandidates.length > 0) {
+      setSelectedGroupIds(new Set());
+    } else {
+      setSelectedGroupIds(new Set(filteredCandidates.map(g => g.id)));
+    }
+  };
+
+  const toggleSelectGroup = (groupId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    const next = new Set(selectedGroupIds);
+    if (next.has(groupId)) {
+      next.delete(groupId);
+    } else {
+      next.add(groupId);
+    }
+    setSelectedGroupIds(next);
+  };
+  
+  const handleDeleteSelected = () => {
+    if (!onDeleteSelected) return;
+    const candidatesToDelete: Candidate[] = [];
+    filteredCandidates.forEach(g => {
+      if (selectedGroupIds.has(g.id)) {
+        candidatesToDelete.push(...g.applications);
+      }
+    });
+    onDeleteSelected(candidatesToDelete);
+    setSelectedGroupIds(new Set());
+  };
 
   const getStatusBadge = (status?: string, interest?: string) => {
     const normalizedStatus = (status || '').toLowerCase();
@@ -129,15 +163,25 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
   return (
     <div className="flex flex-col">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
-            type="text"
-            placeholder="Search candidates by name, email..."
-            className="w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex items-center gap-4 w-full sm:w-auto flex-wrap">
+          <div className="relative w-full sm:w-80 max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              type="text"
+              placeholder="Search candidates by name, email..."
+              className="w-full rounded-xl border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          {selectedGroupIds.size > 0 && onDeleteSelected && (
+            <button
+              onClick={handleDeleteSelected}
+              className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 border border-red-100 hover:bg-red-100 hover:text-red-700 transition-colors shrink-0 shadow-sm"
+            >
+              <Trash2 size={16} /> Delete Selected ({selectedGroupIds.size})
+            </button>
+          )}
         </div>
       </div>
 
@@ -145,7 +189,15 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
             <tr>
-              <th className="w-8 px-4 py-4"></th>
+              <th className="w-12 px-4 py-4 text-center">
+                <input 
+                  type="checkbox" 
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  checked={filteredCandidates.length > 0 && selectedGroupIds.size === filteredCandidates.length}
+                  onChange={toggleSelectAll}
+                />
+              </th>
+              <th className="w-8 px-2 py-4"></th>
               <th className="px-6 py-4 font-bold">Candidate</th>
               <th className="px-6 py-4 font-bold">Applications</th>
               <th className="px-6 py-4 font-bold">Match Score</th>
@@ -156,7 +208,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
           <tbody className="divide-y divide-slate-100">
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">
+                <td colSpan={7} className="px-6 py-12 text-center text-slate-500 font-medium">
                   <div className="flex justify-center items-center gap-3">
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
                     Loading candidates...
@@ -165,7 +217,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
               </tr>
             ) : filteredCandidates.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-slate-500 font-medium">
+                <td colSpan={7} className="px-6 py-12 text-center text-slate-500 font-medium">
                   No candidates found matching your criteria.
                 </td>
               </tr>
@@ -180,7 +232,15 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
                       className={`group transition-colors hover:bg-slate-50 cursor-pointer ${isExpanded ? 'bg-slate-50/50' : ''}`}
                       onClick={(e) => toggleRow(group.id, e)}
                     >
-                      <td className="px-4 py-4 text-slate-400">
+                      <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <input 
+                          type="checkbox" 
+                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                          checked={selectedGroupIds.has(group.id)}
+                          onChange={(e) => toggleSelectGroup(group.id, e)}
+                        />
+                      </td>
+                      <td className="px-2 py-4 text-slate-400">
                         {group.applications.length > 1 ? (
                           isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />
                         ) : null}
@@ -229,7 +289,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
                     {/* EXPANDED APPLICATIONS */}
                     {isExpanded && group.applications.length > 1 && (
                       <tr>
-                        <td colSpan={6} className="p-0 border-b border-slate-200 bg-slate-50/50">
+                        <td colSpan={7} className="p-0 border-b border-slate-200 bg-slate-50/50">
                           <div className="px-14 py-4">
                             <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Applications</h4>
                             <div className="space-y-2">

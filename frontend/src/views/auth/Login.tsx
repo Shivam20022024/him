@@ -60,7 +60,7 @@ const Login: React.FC = () => {
       <div className="text-center mb-8 w-full max-w-md">
         <img src="/logo.png" alt="Novalantis" className="h-20 mx-auto mb-6 object-contain drop-shadow-sm" />
         <h1 className="text-[28px] font-bold text-slate-900 mb-2">Welcome Back</h1>
-        <p className="text-sm text-slate-500 font-medium">Sign in to manage your calls, leads, and AI agents</p>
+        <p className="text-sm text-slate-500 font-medium">Find the right talent, faster.</p>
       </div>
 
       {/* Form Card */}
