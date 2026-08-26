@@ -108,17 +108,16 @@ const Hiring: React.FC = () => {
     const hasActiveCalls = activeCallCandidates.length > 0;
     
     if (hasActiveCalls || candidates.length > 0) {
-      const interval = setInterval(async () => {
-        // Proactively sync active calls from Bolna API if they are still pending
+      const interval = setInterval(() => {
+        // Proactively sync a few active calls from Bolna API in the background
         if (hasActiveCalls) {
-          try {
-            await Promise.all(activeCallCandidates.map(c => hiringApi.syncCall(c.id)));
-          } catch (e) {
-            console.error("Sync failed", e);
-          }
+          // Sync 5 random active calls to avoid hitting rate limits and blocking
+          const candidatesToSync = [...activeCallCandidates].sort(() => 0.5 - Math.random()).slice(0, 5);
+          candidatesToSync.forEach(c => hiringApi.syncCall(c.id).catch(() => {}));
         }
+        
         loadCandidates(true); // Silent refresh to avoid blinking
-      }, 5000); // Poll every 5 seconds for live updates
+      }, 3000); // Poll every 3 seconds for faster live updates
       return () => clearInterval(interval);
     }
   }, [candidates.length, candidates.some(c => c.status === 'ai_call_pending' || c.status === 'calling')]);
