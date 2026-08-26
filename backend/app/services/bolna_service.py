@@ -140,13 +140,14 @@ class BolnaService:
         }
         prompt = f"""
         Analyze this recruiter AI interview transcript and extract the following metrics.
+        IMPORTANT: If the transcript shows that the candidate did not speak at all, or only said 'hello' or 'yes' before the call abruptly ended, you MUST set all scores to 0, interest to 'callback_required', and final_recommendation to 'Call disconnected before assessment.' Do not invent or hallucinate data if the candidate did not answer the questions.
         Return strictly as JSON object with no markdown formatting.
         {{
             "communication_score": 85, (0-100)
             "technical_score": 80, (0-100)
             "confidence_score": 90, (0-100)
             "match_score": 82, (0-100)
-            "interest": "interested", (strictly "interested", "not_interested", or "callback_required". Use "callback_required" if they ask to be called later, OR if the call was abruptly cut off/disconnected in the middle before they finished answering the core questions. Do NOT use "callback_required" if they are simply stating their availability for an interview.)
+            "interest": "interested", (strictly "interested", "not_interested", or "callback_required". Use "callback_required" ONLY if the candidate explicitly asks to be called back later or at a different time. Do NOT use "callback_required" if the call ended normally, even if the candidate didn't say goodbye, or if they simply stated their availability.)
             "final_recommendation": "Strong candidate, recommended for next round.",
             "total_experience": "3 years",
             "relevant_experience": "2 years",
@@ -376,7 +377,7 @@ class BolnaService:
                 elif any(word in val_lower for word in ["yes", "confirmed", "available", "agree"]):
                     update_doc["interest"] = "interested"
                     update_doc["status"] = "interested"
-                elif "callback" in val_lower or "later" in val_lower or "busy" in val_lower or "call" in val_lower:
+                elif "callback" in val_lower or "later" in val_lower or "busy" in val_lower or "call me" in val_lower:
                     update_doc["interest"] = "callback_required"
                     update_doc["status"] = "callback_required"
                 else:
@@ -434,7 +435,7 @@ class BolnaService:
                     update_doc["interview_availability"] = get_valid(update_doc.get("interview_availability"), llm_data.get("interview_availability"))
                     
                     llm_interest = llm_data.get("interest", "").lower()
-                    if get_valid(update_doc.get("interest"), None) is None or llm_interest == "callback_required":
+                    if get_valid(update_doc.get("interest"), None) is None:
                         if llm_interest:
                             update_doc["interest"] = llm_interest
                             update_doc["status"] = llm_interest
