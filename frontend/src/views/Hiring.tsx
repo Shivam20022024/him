@@ -191,26 +191,33 @@ const Hiring: React.FC = () => {
   ): Promise<boolean> => {
     setUploading(true);
     try {
-      const results = await Promise.allSettled(
-        files.map(async (file) => {
-          const response = await hiringApi.uploadResume(file, jobDescription, jobDescriptionFile, skipAi, activeJobId);
-          setCandidates((current) => [response.candidate, ...current]);
+      const results: PromiseSettledResult<any>[] = [];
+      const batchSize = 5;
+      
+      for (let i = 0; i < files.length; i += batchSize) {
+        const batch = files.slice(i, i + batchSize);
+        const batchResults = await Promise.allSettled(
+          batch.map(async (file) => {
+            const response = await hiringApi.uploadResume(file, jobDescription, jobDescriptionFile, skipAi, activeJobId);
+            setCandidates((current) => [response.candidate, ...current]);
 
-          setActivities((current) =>
-            [
-              {
-                id: Date.now().toString(),
-                candidateName: response.candidate.name,
-                type: 'resume_uploaded',
-                message: skipAi ? 'Fast Uploaded Resume' : 'Resume Uploaded',
-                timestamp: new Date().toISOString(),
-              },
-              ...current,
-            ].slice(0, 15)
-          );
-          return response;
-        })
-      );
+            setActivities((current) =>
+              [
+                {
+                  id: Date.now().toString() + Math.random().toString(),
+                  candidateName: response.candidate.name,
+                  type: 'resume_uploaded',
+                  message: skipAi ? 'Fast Uploaded Resume' : 'Resume Uploaded',
+                  timestamp: new Date().toISOString(),
+                },
+                ...current,
+              ].slice(0, 15)
+            );
+            return response;
+          })
+        );
+        results.push(...batchResults);
+      }
 
       const successful = results.filter((r) => r.status === 'fulfilled').length;
       const failedMessages = results
