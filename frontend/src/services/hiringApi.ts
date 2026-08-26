@@ -46,7 +46,7 @@ const HIRE_BASE = (import.meta as any).env.VITE_API_URL || 'http://localhost:800
 
 const hiringClient = axios.create({
   baseURL: HIRE_BASE,
-  timeout: 60000,
+  timeout: 300000, // 5 minutes to accommodate slow AI processing
 });
 
 hiringClient.interceptors.request.use((config) => {
