@@ -191,7 +191,7 @@ const Hiring: React.FC = () => {
     setUploading(true);
     try {
       const results: PromiseSettledResult<any>[] = [];
-      const batchSize = 3;
+      const batchSize = 15; // Increased from 3 to 15 to process much faster concurrently
       
       for (let i = 0; i < files.length; i += batchSize) {
         const batch = files.slice(i, i + batchSize);
