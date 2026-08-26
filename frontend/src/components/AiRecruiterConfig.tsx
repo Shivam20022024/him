@@ -291,7 +291,7 @@ const AiRecruiterConfig: React.FC<AiRecruiterConfigProps> = ({ job }) => {
 
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
               {previewTab === 'final' && (
-                <pre className="whitespace-pre-wrap text-sm text-slate-700 bg-slate-900 p-6 rounded-2xl text-slate-300 font-mono leading-relaxed">
+                <pre className="whitespace-pre-wrap text-sm text-white bg-slate-900 p-6 rounded-2xl font-mono leading-relaxed">
                   {previewPrompt}
                 </pre>
               )}
