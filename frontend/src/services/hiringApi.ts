@@ -276,6 +276,16 @@ export const hiringApi = {
     }
   },
 
+  async stopCall(candidateId: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      await hiringClient.post(`/bolna/stop-call/${candidateId}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Stop Bolna call failed:', error);
+      return { success: false, message: extractApiErrorMessage(error) };
+    }
+  },
+
   async syncCall(candidateId: string): Promise<{ success: boolean }> {
     try {
       await hiringClient.get(`/bolna/sync-call/${candidateId}`);

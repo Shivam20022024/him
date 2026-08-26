@@ -20,7 +20,7 @@ const EnhancedStatsCards: React.FC<EnhancedStatsCardsProps> = ({ stats }) => {
       {stats.map((stat, index) => (
         <div
           key={index}
-          className="group relative overflow-hidden rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm transition-all hover:shadow-md flex flex-col justify-between min-h-[140px]"
+          className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md flex flex-col justify-between min-h-[140px]"
         >
           <div className="flex items-start justify-between">
             <h3 className="text-[15px] font-semibold text-slate-600">

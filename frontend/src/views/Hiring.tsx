@@ -31,6 +31,7 @@ const Hiring: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [isUploadedExpanded, setIsUploadedExpanded] = useState(true);
   const [calling, setCalling] = useState(false);
+  const [filterMode, setFilterMode] = useState<'all' | 'interested' | 'callback_required'>('all');
   const [notification, setNotification] = useState<Notification>(null);
   const [activities, setActivities] = useState<any[]>([]);
 
@@ -126,7 +127,20 @@ const Hiring: React.FC = () => {
   const groupedCandidates = useMemo<GroupedCandidate[]>(() => {
     const groups = new Map<string, GroupedCandidate>();
     
-    candidates.forEach(c => {
+    let filteredCandidates = candidates;
+    if (filterMode === 'interested') {
+      filteredCandidates = candidates.filter(c => 
+        c.interest?.toLowerCase() === 'interested' || 
+        c.status?.toLowerCase() === 'interested'
+      );
+    } else if (filterMode === 'callback_required') {
+      filteredCandidates = candidates.filter(c => 
+        c.interest?.toLowerCase() === 'callback_required' || 
+        c.status?.toLowerCase() === 'callback_required'
+      );
+    }
+    
+    filteredCandidates.forEach(c => {
       // Use email, then phone, then name as fallback for grouping
       const key = (c.email || c.phone || c.name).toLowerCase().trim();
       
@@ -151,7 +165,7 @@ const Hiring: React.FC = () => {
     });
     
     return Array.from(groups.values());
-  }, [candidates]);
+  }, [candidates, filterMode]);
 
   const shortlistedCandidates = useMemo(
     () => candidates.filter((candidate) => candidate.resume_score >= 70 || candidate.screening_score >= 70),
@@ -486,6 +500,24 @@ const Hiring: React.FC = () => {
     }
   };
 
+  const handleStopCall = async (candidate: Candidate) => {
+    try {
+      setNotification({ tone: 'info', message: `Stopping call for ${candidate.name}...` });
+      
+      // Optimistic update
+      setCandidates(current => current.map(c => 
+        c.id === candidate.id ? { ...c, status: 'cancelled' } : c
+      ));
+
+      await hiringApi.stopCall(candidate.id);
+      
+      setNotification({ tone: 'success', message: `Call stopped for ${candidate.name}.` });
+    } catch (error: any) {
+      setNotification({ tone: 'warning', message: 'Failed to stop the call.' });
+      loadCandidates(true); // Revert optimistic update
+    }
+  };
+
   const handleInterviewCandidate = (candidate: Candidate) => {
     console.log("DEBUG: Setting selectedForInterview to:", candidate.name);
     setSelectedForInterview(candidate);
@@ -527,7 +559,8 @@ const Hiring: React.FC = () => {
     });
   };
 
-  const scrollToResults = () => {
+  const handleViewResults = () => {
+    setFilterMode('interested');
     pipelineRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -623,7 +656,7 @@ const Hiring: React.FC = () => {
               onStartOutreach={handleStartCalling}
               onStartOutreachAll={handleStartCallingAll}
               onSendEmails={handleSendEmails}
-              onViewResults={scrollToResults}
+              onViewResults={handleViewResults}
               onDownloadCandidates={() => hiringApi.downloadExcel('candidates', selectedDate, activeJobId)}
               onDownloadCalls={() => hiringApi.downloadExcel('calls', selectedDate, activeJobId)}
               isGlobal={!activeJobId}
@@ -631,7 +664,7 @@ const Hiring: React.FC = () => {
 
             {showAddCandidate && (
               <div className="w-full">
-                <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h3 className="text-2xl font-black text-slate-900 tracking-tight">Add Profiles</h3>
@@ -659,7 +692,7 @@ const Hiring: React.FC = () => {
 
             <div className="grid items-start gap-6 min-w-0">
               <div ref={pipelineRef} className="min-w-0">
-                <div className="rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm min-w-0">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm min-w-0">
                   <div className="mb-4">
                   <div 
                     className="mb-4 flex items-center justify-between cursor-pointer select-none"
@@ -675,12 +708,29 @@ const Hiring: React.FC = () => {
                         Manage resumes you've uploaded and track their screening progress.
                       </p>
                     </div>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
-                      {isUploadedExpanded ? (
+                    <div className="flex items-center gap-4">
+                      {/* Filter Dropdown */}
+                      <div className="hidden sm:block relative" onClick={(e) => e.stopPropagation()}>
+                        <select
+                          value={filterMode}
+                          onChange={(e) => setFilterMode(e.target.value as 'all' | 'interested' | 'callback_required')}
+                          className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer hover:bg-slate-100 transition-colors"
+                        >
+                          <option value="all">All Candidates</option>
+                          <option value="interested">Interested Only</option>
+                          <option value="callback_required">Call Back Required</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                        </div>
+                      </div>
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
+                        {isUploadedExpanded ? (
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
                       ) : (
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                       )}
+                    </div>
                     </div>
                   </div>
 
@@ -713,6 +763,7 @@ const Hiring: React.FC = () => {
                           onCallCandidate={handleCallCandidate}
                           onDeleteCandidate={handleDeleteCandidate}
                           onDeleteSelected={handleDeleteSelected}
+                          onStopCall={handleStopCall}
                           onViewCandidate={setViewingResult}
                           isLoading={false}
                         />

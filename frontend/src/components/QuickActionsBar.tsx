@@ -23,7 +23,7 @@ const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
   isGlobal = false,
 }) => {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.16em] text-slate-500">

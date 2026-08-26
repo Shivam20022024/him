@@ -115,7 +115,7 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ onUpload, onManualAdd, isUp
       {activeTab === 'upload' ? (
         <>
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4">
+            <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">1. Job Description File (Optional)</label>
                 <div className="relative rounded-2xl border-2 border-dashed border-slate-300 bg-white px-4 py-4 text-center transition hover:border-blue-300 hover:bg-slate-50">
@@ -133,10 +133,8 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ onUpload, onManualAdd, isUp
                   </h4>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <hr className="flex-1 border-slate-200" />
+              <div className="flex items-center justify-center py-2">
                 <span className="text-xs font-semibold uppercase text-slate-400">OR PASTE TEXT</span>
-                <hr className="flex-1 border-slate-200" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">Job Description Text</label>
@@ -146,13 +144,13 @@ const ResumeUpload: React.FC<ResumeUploadProps> = ({ onUpload, onManualAdd, isUp
                     setJobDescription(event.target.value);
                     setJdFile(null);
                   }}
-                  className="h-28 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition-all focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+                  className="h-28 w-full resize-none rounded-2xl border-2 border-slate-300 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 outline-none transition-all focus:border-blue-400 focus:ring-4 focus:ring-blue-100 focus:bg-white [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                   placeholder="Paste the role summary and required skills here..."
                 />
               </div>
             </div>
 
-            <div>
+            <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <label className="mb-2 block text-sm font-medium text-slate-700">2. Candidate Resumes</label>
               <div className="relative flex h-[calc(100%-28px)] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white px-4 py-6 text-center transition hover:border-blue-300 hover:bg-slate-50">
                 <input

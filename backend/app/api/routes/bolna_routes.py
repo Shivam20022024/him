@@ -83,6 +83,23 @@ async def call_candidate(candidate_id: str):
         logger.error(f"Failed to initiate Bolna call: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Bolna error: {str(e)}")
 
+@router.post("/stop-call/{candidate_id}")
+async def stop_candidate_call(candidate_id: str):
+    """Marks a candidate's active call as cancelled."""
+    db = get_db()
+    candidate = await db.candidates.find_one({"id": candidate_id})
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+        
+    await db.candidates.update_one(
+        {"id": candidate_id},
+        {"$set": {
+            "status": "cancelled",
+            "last_interaction": datetime.utcnow()
+        }}
+    )
+    return {"status": "success", "message": "Call stopped/cancelled"}
+
 @router.post("/call-shortlisted")
 async def call_shortlisted():
     """Initiates Bolna.ai calls for all shortlisted candidates."""

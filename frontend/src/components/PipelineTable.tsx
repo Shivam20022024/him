@@ -8,6 +8,7 @@ interface PipelineTableProps {
   onCallCandidate?: (candidate: Candidate) => void;
   onDeleteCandidate?: (candidate: Candidate) => void;
   onDeleteSelected?: (candidates: Candidate[]) => void;
+  onStopCall?: (candidate: Candidate) => void;
   onViewCandidate?: (group: GroupedCandidate) => void;
   isLoading?: boolean;
 }
@@ -17,6 +18,7 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
   onCallCandidate,
   onDeleteCandidate,
   onDeleteSelected,
+  onStopCall,
   onViewCandidate,
   isLoading = false,
 }) => {
@@ -276,6 +278,14 @@ const PipelineTable: React.FC<PipelineTableProps> = ({
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                           {(latestApp.status === 'calling' || latestApp.status === 'ai_call_pending') && onStopCall && (
+                             <button
+                               onClick={() => onStopCall(latestApp)}
+                               className="rounded-lg px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 border border-red-200 transition hover:bg-red-100"
+                             >
+                               Stop Call
+                             </button>
+                           )}
                            <button
                              onClick={() => onViewCandidate?.(group)}
                              className="rounded-lg px-3 py-1.5 text-xs font-bold text-white bg-slate-900 transition hover:bg-slate-800"

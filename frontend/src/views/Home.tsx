@@ -58,8 +58,9 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-400">
             <Button
+              variant="secondary"
               size="lg"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold shadow-lg transition-all duration-300 hover:-translate-y-0.5"
               onClick={() => navigate('/jobs')}
             >
               Get Started
