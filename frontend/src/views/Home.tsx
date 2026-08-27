@@ -237,7 +237,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               size="lg"
-              className="w-full sm:w-auto px-10 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 transition-all duration-300"
+              className="w-full sm:w-auto px-10 py-4 rounded-xl !bg-blue-600 hover:!bg-blue-700 !text-white font-bold shadow-lg shadow-blue-200 transition-all duration-300"
               onClick={() => navigate('/jobs')}
             >
               Get Started
